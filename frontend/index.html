@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDIFLOW - Hospital Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap CSS (a framework to make styling easier) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">MEDIFLOW</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="patient-queue.html">Patient Queue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Bed Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Inventory</a>
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Hospital Dashboard</h1>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        Patient Queue Status
+                    </div>
+                    <div class="card-body">
+                        <h5>Current Patients: <span id="queueCount">0</span></h5>
+                        <p>Average Wait Time: <span id="avgWaitTime">0</span> minutes</p>
+                        <button class="btn btn-primary" id="refreshQueue">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        Bed Availability
+                    </div>
+                    <div class="card-body">
+                        <h5>Available Beds: <span id="availableBeds">0</span></h5>
+                        <p>Occupancy Rate: <span id="occupancyRate">0</span>%</p>
+                        <button class="btn btn-primary" id="refreshBeds">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        Inventory Status
+                    </div>
+                    <div class="card-body">
+                        <h5>Low Stock Items: <span id="lowStockCount">0</span></h5>
+                        <p>Critical Items: <span id="criticalItems">0</span></p>
+                        <button class="btn btn-primary" id="refreshInventory">Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Our custom JavaScript -->
+    <script src="js/main.js"></script>
+</body>
+</html>
