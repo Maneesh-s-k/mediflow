@@ -148,3 +148,72 @@ app.post('/api/patient-queue/add', (req, res) => {
     res.status(201).json(newPatient);
 });
 
+// Add this to your existing server.js file
+
+// Store admission data
+let admissionsData = [];
+
+// Route to get all admissions
+app.get('/api/admissions', (req, res) => {
+    res.json(admissionsData);
+});
+
+// Route to add a new admission
+app.post('/api/admissions', (req, res) => {
+    const newAdmission = req.body;
+    
+    // Validate required fields
+    if (!newAdmission.patient || !newAdmission.patient.name || !newAdmission.department) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Add to admissions data
+    admissionsData.push(newAdmission);
+    
+    res.status(201).json(newAdmission);
+});
+
+// Route to get a specific admission
+app.get('/api/admissions/:id', (req, res) => {
+    const admissionId = req.params.id;
+    const admission = admissionsData.find(a => a.id === admissionId);
+    
+    if (!admission) {
+        return res.status(404).json({ error: 'Admission not found' });
+    }
+    
+    res.json(admission);
+});
+
+// Route to update an admission
+app.put('/api/admissions/:id', (req, res) => {
+    const admissionId = req.params.id;
+    const updatedAdmission = req.body;
+    
+    const index = admissionsData.findIndex(a => a.id === admissionId);
+    
+    if (index === -1) {
+        return res.status(404).json({ error: 'Admission not found' });
+    }
+    
+    // Update admission
+    admissionsData[index] = updatedAdmission;
+    
+    res.json(updatedAdmission);
+});
+
+// Route to get bed availability
+app.get('/api/beds/availability', (req, res) => {
+    // In a real app, this would calculate availability from the bed data
+    // For now, we'll return sample data
+    const availability = {
+        General: 15,
+        ICU: 3,
+        Pediatric: 8,
+        Maternity: 6,
+        Isolation: 4
+    };
+    
+    res.json(availability);
+});
+

@@ -4,71 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Queue Management - MEDIFLOW</title>
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="index.html">MEDIFLOW</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.html">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="patient-queue.html">Patient Queue</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="vitals-capture.html">Vitals Capture</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="bed-management.html">Bed Management</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Inventory</a>
-                    </li>
-                </ul>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Navbar with glass effect -->
+    <nav id="navbar" nav class="sticky top-0 z-10 backdrop-blur-md bg-gray-900/80 border-b border-gray-800">
+        <div class="max-w-full px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="#" class="text-xl font-bold text-white flex items-center">
+                        <span class="text-2xl bg-gradient-to-r from-blue-500 to-teal-400 text-transparent bg-clip-text">MEDI</span>
+                        <span class="text-2xl">FLOW</span>
+                        <span class="ml-2 bg-gradient-to-r from-blue-500 to-teal-400 p-1 rounded text-xs text-white">v1.0</span>
+                    </a>
+                    <div class="hidden md:flex ml-10 space-x-1">
+                        <a href="index.html" class="nav-link group">
+                            <i class="fas fa-chart-line mr-2 group-hover:text-blue-400 transition-colors"></i> Dashboard
+                        </a>
+                        <a href="patient-queue.html" class="nav-link active group">
+                            <i class="fas fa-users mr-2 group-hover:text-blue-400 transition-colors"></i> Patient Queue
+                        </a>
+                        <a href="vitals-capture.html" class="nav-link group">
+                            <i class="fas fa-heartbeat mr-2 group-hover:text-blue-400 transition-colors"></i> Vitals Capture
+                        </a>
+                        <a href="patient-admission.html" class="nav-link group">
+                            <i class="fas fa-procedures mr-2 group-hover:text-blue-400 transition-colors"></i> Admission
+                        </a>
+                        <a href="bed-management.html" class="nav-link group">
+                            <i class="fas fa-bed mr-2 group-hover:text-blue-400 transition-colors"></i> Bed Management
+                        </a>
+                        <a href="#" class="nav-link group">
+                            <i class="fas fa-pills mr-2 group-hover:text-blue-400 transition-colors"></i> Inventory
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-white flex items-center">
+                        <i class="fas fa-clock mr-1 text-blue-400"></i> <span id="currentTime" class="text-sm">3:19 PM</span>
+                    </span>
+                    <div class="relative">
+                        <button id="userDropdownButton" class="flex items-center space-x-2 bg-gray-800 rounded-full pl-2 pr-3 py-1 border border-gray-700 hover:border-blue-500 transition-colors">
+                            <span class="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-xs font-bold">DS</span>
+                            <span class="text-sm">Dr. Smith</span>
+                            <i class="fas fa-chevron-down text-xs text-gray-400"></i>
+                        </button>
+                        <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700 animate-fade-in">
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                                <i class="fas fa-user mr-2 text-blue-400"></i> Profile
+                            </a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                                <i class="fas fa-cog mr-2 text-blue-400"></i> Settings
+                            </a>
+                            <div class="border-t border-gray-700 my-1"></div>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                                <i class="fas fa-sign-out-alt mr-2 text-blue-400"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
         </div>
     </nav>
 
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">Add New Patient</h5>
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Add New Patient Form -->
+            <div>
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-700 mb-6">
+                    <div class="bg-gradient-to-r from-blue-900 to-blue-800 px-4 py-3">
+                        <h3 class="font-semibold text-white flex items-center">
+                            <i class="fas fa-user-plus mr-2"></i> Add New Patient
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <form id="addPatientForm">
-                            <div class="mb-3">
-                                <label for="patientName" class="form-label">Patient Name</label>
-                                <input type="text" class="form-control" id="patientName" required>
+                    <div class="p-4">
+                        <form id="addPatientForm" class="space-y-4">
+                            <div class="space-y-2">
+                                <label for="patientName" class="block text-sm font-medium">Patient Name</label>
+                                <input type="text" id="patientName" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                             </div>
-                            <div class="mb-3">
-                                <label for="patientAge" class="form-label">Age</label>
-                                <input type="number" class="form-control" id="patientAge" min="0" max="120" required>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label for="patientAge" class="block text-sm font-medium">Age</label>
+                                    <input type="number" id="patientAge" min="0" max="120" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="patientGender" class="block text-sm font-medium">Gender</label>
+                                    <select id="patientGender" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="patientGender" class="form-label">Gender</label>
-                                <select class="form-select" id="patientGender" required>
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="department" class="form-label">Department</label>
-                                <select class="form-select" id="department" required>
+                            <div class="space-y-2">
+                                <label for="department" class="block text-sm font-medium">Department</label>
+                                <select id="department" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="">Select Department</option>
                                     <option value="General Medicine">General Medicine</option>
                                     <option value="Cardiology">Cardiology</option>
@@ -78,137 +112,172 @@
                                     <option value="Emergency">Emergency</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="urgencyLevel" class="form-label">Urgency Level</label>
-                                <select class="form-select" id="urgencyLevel" required>
+                            <div class="space-y-2">
+                                <label for="urgencyLevel" class="block text-sm font-medium">Urgency Level</label>
+                                <select id="urgencyLevel" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
                                     <option value="1">Low (Routine)</option>
                                     <option value="2">Medium (Priority)</option>
                                     <option value="3">High (Urgent)</option>
                                     <option value="4">Critical (Emergency)</option>
                                 </select>
                             </div>
-                            <div class="mb-3">
-                                <label for="symptoms" class="form-label">Chief Complaints</label>
-                                <textarea class="form-control" id="symptoms" rows="2"></textarea>
+                            <div class="space-y-2">
+                                <label for="symptoms" class="block text-sm font-medium">Chief Complaints</label>
+                                <textarea id="symptoms" rows="2" class="w-full px-3 py-2 bg-gray-800 rounded-md border border-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
-                            <div class="mb-3">
-                                <label for="vitals" class="form-label">Vitals</label>
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text">BP</span>
-                                    <input type="text" class="form-control" id="bloodPressure" placeholder="120/80">
-                                </div>
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text">Temp</span>
-                                    <input type="text" class="form-control" id="temperature" placeholder="98.6">
-                                    <span class="input-group-text">°F</span>
-                                </div>
-                                <div class="input-group mb-2">
-                                    <span class="input-group-text">HR</span>
-                                    <input type="text" class="form-control" id="heartRate" placeholder="72">
-                                    <span class="input-group-text">bpm</span>
-                                </div>
-                                <div class="input-group">
-                                    <span class="input-group-text">SpO₂</span>
-                                    <input type="text" class="form-control" id="oxygenSaturation" placeholder="98">
-                                    <span class="input-group-text">%</span>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium">Vitals</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-l-md border border-gray-700">BP</span>
+                                        <input type="text" id="bloodPressure" placeholder="120/80" class="flex-1 px-3 py-2 bg-gray-800 border-y border-r border-gray-700 rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-l-md border border-gray-700">Temp</span>
+                                        <input type="text" id="temperature" placeholder="98.6" class="flex-1 px-3 py-2 bg-gray-800 border-y border-gray-700">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-r-md border border-gray-700">°F</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-l-md border border-gray-700">HR</span>
+                                        <input type="text" id="heartRate" placeholder="72" class="flex-1 px-3 py-2 bg-gray-800 border-y border-gray-700">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-r-md border border-gray-700">bpm</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="bg-gray-700 px-3 py-2 rounded-l-md border border-gray-700">SpO₂</span>
+                                        <input type="text" id="oxygenSaturation" placeholder="98" class="flex-1 px-3 py-2 bg-gray-800 border-y border-r border-gray-700 rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Add to Queue</button>
+                            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-2 px-4 rounded-md transition-all duration-300">
+                                Add to Queue
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-8">
-                <div class="card mb-4">
-                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Current Queue</h5>
-                        <div>
-                            <span class="badge bg-light text-dark me-2">Total: <span id="totalPatients">0</span></span>
-                            <span class="badge bg-warning text-dark me-2">Waiting: <span id="waitingPatients">0</span></span>
-                            <span class="badge bg-info text-dark">Avg. Wait: <span id="avgWaitTime">0</span> min</span>
+            <!-- Queue and Serving Section -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Current Queue -->
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-700">
+                    <div class="bg-gradient-to-r from-emerald-900 to-emerald-800 px-4 py-3 flex justify-between items-center">
+                        <h3 class="font-semibold text-white flex items-center">
+                            <i class="fas fa-list-ol mr-2"></i> Current Queue
+                        </h3>
+                        <div class="flex space-x-2">
+                            <span class="px-2 py-1 bg-gray-800/50 rounded-md text-xs border border-gray-700">
+                                Total: <span id="totalPatients" class="font-medium">0</span>
+                            </span>
+                            <span class="px-2 py-1 bg-amber-800/50 rounded-md text-xs border border-amber-700">
+                                Waiting: <span id="waitingPatients" class="font-medium">0</span>
+                            </span>
+                            <span class="px-2 py-1 bg-blue-800/50 rounded-md text-xs border border-blue-700">
+                                Avg. Wait: <span id="avgWaitTime" class="font-medium">0</span> min
+                            </span>
                         </div>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Token</th>
-                                        <th>Name</th>
-                                        <th>Age/Gender</th>
-                                        <th>Department</th>
-                                        <th>Urgency</th>
-                                        <th>Wait Time</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="queueTableBody">
-                                    <!-- Queue items will be added here dynamically -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-700">
+                            <thead class="bg-gray-700/50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Token</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Age/Gender</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Department</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Urgency</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Wait Time</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="queueTableBody" class="divide-y divide-gray-700">
+                                <!-- Queue items will be added here dynamically -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">Now Serving</h5>
+                <!-- Now Serving and Department Load -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Now Serving -->
+                    <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-700">
+                        <div class="bg-gradient-to-r from-blue-900 to-blue-800 px-4 py-3">
+                            <h3 class="font-semibold text-white flex items-center">
+                                <i class="fas fa-user-clock mr-2"></i> Now Serving
+                            </h3>
+                        </div>
+                        <div class="p-4 text-center" id="nowServingSection">
+                            <div id="noPatientServing">
+                                <i class="fas fa-user-clock fa-3x text-gray-500 mb-3"></i>
+                                <p class="text-lg text-gray-300">No patient currently being served</p>
+                                <button id="callNextPatient" class="mt-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white py-2 px-4 rounded-md transition-all duration-300">
+                                    <i class="fas fa-phone-alt mr-2"></i> Call Next Patient
+                                </button>
                             </div>
-                            <div class="card-body text-center" id="nowServingSection">
-                                <div id="noPatientServing">
-                                    <i class="fas fa-user-clock fa-3x text-muted mb-3"></i>
-                                    <p class="lead">No patient currently being served</p>
-                                    <button id="callNextPatient" class="btn btn-primary">Call Next Patient</button>
+                            <div id="currentPatientServing" style="display: none;">
+                                <div class="mb-3">
+                                    <span id="servingToken" class="px-3 py-1 bg-blue-900/50 rounded-md text-sm border border-blue-700">Token #123</span>
                                 </div>
-                                <div id="currentPatientServing" style="display: none;">
-                                    <h3 id="servingToken" class="text-primary mb-3">Token #123</h3>
-                                    <h4 id="servingName">John Doe</h4>
-                                    <p id="servingDetails">42/M - Cardiology</p>
-                                    <p><span class="badge bg-danger" id="servingUrgency">High</span></p>
-                                    <div class="d-flex justify-content-center mt-3">
-                                        <button id="completeService" class="btn btn-success me-2">Complete</button>
-                                        <button id="cancelService" class="btn btn-danger">Cancel</button>
-                                    </div>
+                                <h3 id="servingName" class="text-xl font-bold mb-2">John Doe</h3>
+                                <p id="servingDetails" class="text-gray-300 mb-2">42/M - Cardiology</p>
+                                <p><span id="servingUrgency" class="px-2 py-1 bg-red-900/50 rounded-md text-xs border border-red-700">High</span></p>
+                                <div class="flex justify-center space-x-3 mt-4">
+                                    <button id="completeService" class="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white py-2 px-4 rounded-md transition-all duration-300">
+                                        <i class="fas fa-check mr-1"></i> Complete
+                                    </button>
+                                    <button id="cancelService" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-2 px-4 rounded-md transition-all duration-300">
+                                        <i class="fas fa-times mr-1"></i> Cancel
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="mb-0">Department Load</h5>
-                            </div>
-                            <div class="card-body p-0">
-                                <ul class="list-group list-group-flush" id="departmentLoad">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        General Medicine
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Cardiology
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Orthopedics
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Pediatrics
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Neurology
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        Emergency
-                                        <span class="badge bg-primary rounded-pill">0</span>
-                                    </li>
-                                </ul>
-                            </div>
+                    
+                    <!-- Department Load -->
+                    <div class="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-gray-700">
+                        <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 px-4 py-3">
+                            <h3 class="font-semibold text-white flex items-center">
+                                <i class="fas fa-hospital-alt mr-2"></i> Department Load
+                            </h3>
+                        </div>
+                        <div class="p-0">
+                            <ul id="departmentLoad" class="divide-y divide-gray-700">
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-stethoscope mr-2 text-blue-400"></i> General Medicine
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-heartbeat mr-2 text-red-400"></i> Cardiology
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-bone mr-2 text-amber-400"></i> Orthopedics
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-baby mr-2 text-green-400"></i> Pediatrics
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-brain mr-2 text-purple-400"></i> Neurology
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                                <li class="flex justify-between items-center px-4 py-3 hover:bg-gray-700/30 transition-colors">
+                                    <span class="flex items-center">
+                                        <i class="fas fa-ambulance mr-2 text-red-400"></i> Emergency
+                                    </span>
+                                    <span class="px-2 py-1 bg-blue-900/50 rounded-full text-xs border border-blue-700">0</span>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -216,9 +285,73 @@
         </div>
     </div>
 
-    <!-- Bootstrap JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Our custom JavaScript -->
+    <!-- Add animation styles -->
+    <style>
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out forwards;
+        }
+    </style>
+
+    <!-- JavaScript -->
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        
+        // Update time every minute
+        updateTime();
+        setInterval(updateTime, 60000);
+        
+        // User dropdown toggle
+        document.getElementById('userDropdownButton').addEventListener('click', function() {
+            document.getElementById('userDropdown').classList.toggle('hidden');
+        });
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('#userDropdownButton')) {
+                document.getElementById('userDropdown').classList.add('hidden');
+            }
+        });
+         // Hide navbar on scroll - improved implementation
+let prevScrollPos = window.pageYOffset;
+
+window.addEventListener('scroll', function() {
+    let currentScrollPos = window.pageYOffset;
+    const navbar = document.getElementById('navbar');
+    
+    if (!navbar) return; // Safety check
+    
+    if (prevScrollPos > currentScrollPos) {
+        // Scrolling UP - show navbar
+        navbar.style.transform = 'translateY(0)';
+    } else {
+        // Scrolling DOWN - hide navbar
+        navbar.style.transform = 'translateY(-100%)';
+    }
+    
+    prevScrollPos = currentScrollPos;
+});
+
+    </script>
+    
+    <!-- Page-specific JavaScript -->
     <script src="js/patient-queue.js"></script>
+    
+   
 </body>
 </html>

@@ -1,17 +1,20 @@
 {
-  "name": "backend",
+  "name": "mediflow-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "concurrently \"npm run start\" \"npm run build:css -- --watch\"",
+    "build:css": "tailwindcss -i ../frontend/css/tailwind.css -o ../frontend/css/styles.css"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.18.2"
   },
-  "description": ""
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
 }
