@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitals Capture - MEDIFLOW</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">MEDIFLOW</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="patient-queue.html">Patient Queue</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="vitals-capture.html">Vitals Capture</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="bed-management.html">Bed Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Inventory</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Patient Vitals Capture</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="patientInfoSection">
+                            <h6 class="card-title mb-3">Patient Information</h6>
+                            <form id="patientInfoForm">
+                                <div class="mb-3">
+                                    <label for="patientName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="patientName" required>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="patientAge" class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="patientAge" min="0" max="120" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="patientGender" class="form-label">Gender</label>
+                                        <select class="form-select" id="patientGender" required>
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="chiefComplaint" class="form-label">Chief Complaint</label>
+                                    <textarea class="form-control" id="chiefComplaint" rows="2" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="department" class="form-label">Department</label>
+                                    <select class="form-select" id="department" required>
+                                        <option value="">Select Department</option>
+                                        <option value="General Medicine">General Medicine</option>
+                                        <option value="Cardiology">Cardiology</option>
+                                        <option value="Orthopedics">Orthopedics</option>
+                                        <option value="Pediatrics">Pediatrics</option>
+                                        <option value="Neurology">Neurology</option>
+                                        <option value="Emergency">Emergency</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Continue to Vitals</button>
+                            </form>
+                        </div>
+                        
+                        <div id="vitalsSection" style="display: none;">
+                            <h6 class="card-title mb-3">Capture Vitals</h6>
+                            <div class="text-center mb-4">
+                                <i class="fas fa-heartbeat fa-3x text-danger mb-3"></i>
+                                <h5 id="patientNameDisplay">John Doe</h5>
+                            </div>
+                            
+                            <form id="vitalsForm">
+                                <div class="mb-3">
+                                    <label for="bloodPressure" class="form-label">Blood Pressure (mmHg)</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="bloodPressureSystolic" placeholder="120" required>
+                                        <span class="input-group-text">/</span>
+                                        <input type="text" class="form-control" id="bloodPressureDiastolic" placeholder="80" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="heartRate" class="form-label">Heart Rate (bpm)</label>
+                                    <input type="number" class="form-control" id="heartRate" min="30" max="250" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="temperature" class="form-label">Temperature (°F)</label>
+                                    <input type="number" class="form-control" id="temperature" step="0.1" min="90" max="110" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="oxygenSaturation" class="form-label">Oxygen Saturation (%)</label>
+                                    <input type="number" class="form-control" id="oxygenSaturation" min="50" max="100" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="respiratoryRate" class="form-label">Respiratory Rate (breaths/min)</label>
+                                    <input type="number" class="form-control" id="respiratoryRate" min="5" max="60" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-control" id="weight" step="0.1" min="0" max="300">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="height" class="form-label">Height (cm)</label>
+                                    <input type="number" class="form-control" id="height" min="0" max="300">
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Submit Vitals</button>
+                            </form>
+                        </div>
+                        
+                        <div id="triageResultSection" style="display: none;">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-clipboard-check fa-3x text-success mb-3"></i>
+                                <h5>Triage Assessment Complete</h5>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Patient Information</h6>
+                                    <p class="mb-1"><strong>Name:</strong> <span id="resultName"></span></p>
+                                    <p class="mb-1"><strong>Age/Gender:</strong> <span id="resultAgeGender"></span></p>
+                                    <p class="mb-1"><strong>Department:</strong> <span id="resultDepartment"></span></p>
+                                    <p class="mb-0"><strong>Chief Complaint:</strong> <span id="resultComplaint"></span></p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">Vital Signs</h6>
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Blood Pressure</small>
+                                            <p id="resultBP" class="mb-0">120/80 mmHg</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Heart Rate</small>
+                                            <p id="resultHR" class="mb-0">72 bpm</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Temperature</small>
+                                            <p id="resultTemp" class="mb-0">98.6 °F</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">SpO₂</small>
+                                            <p id="resultO2" class="mb-0">98%</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Respiratory Rate</small>
+                                            <p id="resultRR" class="mb-0">16 breaths/min</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">BMI</small>
+                                            <p id="resultBMI" class="mb-0">22.5</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">AI Triage Assessment</h6>
+                                    <div id="urgencyLevelDisplay" class="mt-3 mb-3">
+                                        <span class="badge bg-warning text-dark fs-5 p-2">Medium Priority</span>
+                                    </div>
+                                    <p class="mb-0" id="triageMessage">Based on vital signs and symptoms, this patient requires standard priority care.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title mb-3">Queue Information</h6>
+                                    <h3 class="text-primary mb-2" id="tokenNumber">Token: A1005</h3>
+                                    <p class="mb-1">Estimated Wait Time: <span id="estimatedWaitTime">25 minutes</span></p>
+                                    <p class="mb-3">Please proceed to the <span id="waitingArea">General Medicine</span> waiting area.</p>
+                                    <button id="printTokenBtn" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-print me-1"></i> Print Token
+                                    </button>
+                                    <button id="sendSMSBtn" class="btn btn-outline-success">
+                                        <i class="fas fa-sms me-1"></i> Send SMS
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button id="newPatientBtn" class="btn btn-primary w-100">
+                                <i class="fas fa-user-plus me-1"></i> New Patient
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Our custom JavaScript -->
+    <script src="js/vitals-capture.js"></script>
+</body>
+</html>

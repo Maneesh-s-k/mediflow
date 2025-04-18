@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`${API_URL}/patient-queue/all`);
             if (response.ok) {
                 patientQueue = await response.json();
+                // Sort the queue by urgency level and arrival time
+                sortQueueByPriority();
                 updateQueueDisplay();
             } else {
                 // For demo purposes, initialize with sample data if API fails
@@ -110,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         
         tokenCounter = 1004; // Set the next token number
+        sortQueueByPriority();
         updateQueueDisplay();
     }
     
@@ -169,19 +172,28 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add to local array
         patientQueue.push(patient);
         
-        // Sort queue by urgency level (descending) and then by arrival time (ascending)
-        patientQueue.sort((a, b) => {
-            if (b.urgencyLevel !== a.urgencyLevel) {
-                return b.urgencyLevel - a.urgencyLevel;
-            }
-            return new Date(a.arrivalTime) - new Date(b.arrivalTime);
-        });
+        // Sort queue by priority
+        sortQueueByPriority();
         
         // Update the display
         updateQueueDisplay();
         
         // Send to server (in a real app)
         sendQueueToServer();
+    }
+    
+    // Sort queue by urgency level and arrival time
+    function sortQueueByPriority() {
+        // Sort by urgency level (descending) and then by arrival time (ascending)
+        patientQueue.sort((a, b) => {
+            // First compare by urgency level (4 is highest, 1 is lowest)
+            if (b.urgencyLevel !== a.urgencyLevel) {
+                return b.urgencyLevel - a.urgencyLevel;
+            }
+            
+            // If urgency levels are the same, sort by arrival time (oldest first)
+            return new Date(a.arrivalTime) - new Date(b.arrivalTime);
+        });
     }
     
     // Calculate estimated wait time based on department and urgency
@@ -273,3 +285,260 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${patient.department}</td>
                 <td>${urgencyBadge}</td>
                 <td>${waitedSoFar} min / ${patient.estimatedWaitTime} min</td>
+                <td>
+                    <button class="btn btn-sm btn-primary call-patient" data-id="${patient.id}">
+                        <i class="fas fa-phone-alt"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger remove-patient" data-id="${patient.id}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            `;
+            
+            // Add event listeners to buttons
+            row.querySelector('.call-patient').addEventListener('click', () => callSpecificPatient(patient.id));
+            row.querySelector('.remove-patient').addEventListener('click', () => removePatient(patient.id));
+            
+            // Add to table
+            queueTableBody.appendChild(row);
+        });
+    }
+    
+    // Update department load display
+    function updateDepartmentLoad() {
+        const departments = ['General Medicine', 'Cardiology', 'Orthopedics', 'Pediatrics', 'Neurology', 'Emergency'];
+        const departmentLoadElement = document.getElementById('departmentLoad');
+        
+        // Clear current list
+        departmentLoadElement.innerHTML = '';
+        
+        // Count patients by department
+        const departmentCounts = {};
+        departments.forEach(dept => {
+            departmentCounts[dept] = patientQueue.filter(p => p.department === dept).length;
+        });
+        
+        // Create list items
+        departments.forEach(dept => {
+            const count = departmentCounts[dept] || 0;
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            
+            // Add color coding based on load
+            let badgeClass = 'bg-primary';
+            if (count > 5) {
+                badgeClass = 'bg-danger';
+            } else if (count > 3) {
+                badgeClass = 'bg-warning text-dark';
+            }
+            
+            li.innerHTML = `
+                ${dept}
+                <span class="badge ${badgeClass} rounded-pill">${count}</span>
+            `;
+            
+            departmentLoadElement.appendChild(li);
+        });
+    }
+    
+    // Call the next patient in queue
+    function callNextPatient() {
+        if (patientQueue.length === 0) {
+            alert('No patients in queue');
+            return;
+        }
+        
+        // Get the highest priority patient (already sorted)
+        currentPatient = patientQueue.shift();
+        
+        // Update the display
+        displayCurrentPatient();
+        updateQueueDisplay();
+        
+        // Send to server (in a real app)
+        sendQueueToServer();
+    }
+    
+    // Call a specific patient by ID
+    function callSpecificPatient(patientId) {
+        const index = patientQueue.findIndex(p => p.id === patientId);
+        
+        if (index === -1) {
+            alert('Patient not found in queue');
+            return;
+        }
+        
+        // Remove from queue and set as current
+        currentPatient = patientQueue.splice(index, 1)[0];
+        
+        // Update the display
+        displayCurrentPatient();
+        updateQueueDisplay();
+        
+        // Send to server (in a real app)
+        sendQueueToServer();
+    }
+    
+    // Display the current patient being served
+    function displayCurrentPatient() {
+        if (currentPatient) {
+            // Update the current patient display
+            document.getElementById('servingToken').textContent = `Token ${currentPatient.token}`;
+            document.getElementById('servingName').textContent = currentPatient.name;
+            document.getElementById('servingDetails').textContent = 
+                `${currentPatient.age}/${currentPatient.gender.charAt(0)} - ${currentPatient.department}`;
+                
+            // Set urgency badge
+            let urgencyText = 'Low';
+            let urgencyClass = 'bg-success';
+            
+            switch(currentPatient.urgencyLevel) {
+                case 2:
+                    urgencyText = 'Medium';
+                    urgencyClass = 'bg-info';
+                    break;
+                case 3:
+                    urgencyText = 'High';
+                    urgencyClass = 'bg-warning text-dark';
+                    break;
+                case 4:
+                    urgencyText = 'Critical';
+                    urgencyClass = 'bg-danger';
+                    break;
+            }
+            
+            const servingUrgency = document.getElementById('servingUrgency');
+            servingUrgency.textContent = urgencyText;
+            servingUrgency.className = `badge ${urgencyClass}`;
+            
+            // Show current patient section, hide "no patient" section
+            noPatientServing.style.display = 'none';
+            currentPatientServing.style.display = 'block';
+        } else {
+            // No current patient, show "no patient" section
+            noPatientServing.style.display = 'block';
+            currentPatientServing.style.display = 'none';
+        }
+    }
+    
+    // Complete service for current patient
+    function completeService() {
+        if (!currentPatient) {
+            alert('No patient currently being served');
+            return;
+        }
+        
+        // In a real app, you would send completion data to the server
+        
+        // Clear current patient
+        currentPatient = null;
+        displayCurrentPatient();
+        
+        // Send to server (in a real app)
+        sendQueueToServer();
+    }
+    
+    // Cancel service for current patient
+    function cancelService() {
+        if (!currentPatient) {
+            alert('No patient currently being served');
+            return;
+        }
+        
+        // Ask for confirmation
+        if (!confirm(`Are you sure you want to return ${currentPatient.name} to the queue?`)) {
+            return;
+        }
+        
+        // Add back to queue
+        addToQueue(currentPatient);
+        
+        // Clear current patient
+        currentPatient = null;
+        displayCurrentPatient();
+        
+        // Send to server (in a real app)
+        sendQueueToServer();
+    }
+    
+    // Remove a patient from the queue
+    function removePatient(patientId) {
+        const index = patientQueue.findIndex(p => p.id === patientId);
+        
+        if (index === -1) {
+            alert('Patient not found in queue');
+            return;
+        }
+        
+        const patient = patientQueue[index];
+        
+        // Ask for confirmation
+        if (!confirm(`Are you sure you want to remove ${patient.name} from the queue?`)) {
+            return;
+        }
+        
+        // Remove from queue
+        patientQueue.splice(index, 1);
+        
+        // Update the display
+        updateQueueDisplay();
+        
+        // Send to server (in a real app)
+        sendQueueToServer();
+    }
+    
+    // Send queue data to server (in a real app)
+    function sendQueueToServer() {
+        // This would send the updated queue to the server
+        // For now, we'll just update the dashboard count
+        updateDashboardCount();
+    }
+    
+    // Update the dashboard count
+    async function updateDashboardCount() {
+        try {
+            const response = await fetch(`${API_URL}/patient-queue`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    count: patientQueue.length,
+                    avgWaitTime: parseInt(avgWaitTimeElement.textContent)
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('Failed to update dashboard count');
+            }
+        } catch (error) {
+            console.error('Error updating dashboard count:', error);
+        }
+    }
+    
+    // Process patients from vitals capture system
+    async function processTriagedPatients() {
+        try {
+            const response = await fetch(`${API_URL}/patient-queue/triaged`);
+            if (response.ok) {
+                const triagedPatients = await response.json();
+                
+                // Add each triaged patient to the queue
+                triagedPatients.forEach(patient => {
+                    addToQueue(patient);
+                });
+                
+                // Clear the triaged patients list on the server
+                await fetch(`${API_URL}/patient-queue/triaged/clear`, { method: 'POST' });
+            }
+        } catch (error) {
+            console.error('Error processing triaged patients:', error);
+        }
+    }
+    
+    // Update the queue display every minute to refresh wait times
+    setInterval(updateQueueDisplay, 60000);
+    
+    // Check for new triaged patients every 30 seconds
+    setInterval(processTriagedPatients, 30000);
+});

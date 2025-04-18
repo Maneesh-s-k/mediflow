@@ -123,3 +123,28 @@ app.post('/api/inventory', (req, res) => {
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+
+// Route to add a patient to the queue with vitals and triage data
+app.post('/api/patient-queue/add', (req, res) => {
+    const newPatient = req.body;
+    
+    // Validate required fields
+    if (!newPatient.name || !newPatient.department) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Add to queue
+    patientQueueData.push(newPatient);
+    
+    // Update dashboard count
+    hospitalData.patientQueue.count = patientQueueData.length;
+    
+    // Calculate average wait time
+    const totalWaitTime = patientQueueData.reduce((sum, patient) => sum + patient.estimatedWaitTime, 0);
+    const avgWaitTime = patientQueueData.length > 0 ? Math.round(totalWaitTime / patientQueueData.length) : 0;
+    hospitalData.patientQueue.avgWaitTime = avgWaitTime;
+    
+    res.status(201).json(newPatient);
+});
+
