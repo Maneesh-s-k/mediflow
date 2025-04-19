@@ -14,6 +14,9 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import Login from './pages/Login';
 import ProfileSettings from './pages/ProfileSettings';
 import { useAuth } from './context/Authcontext';
+import Profile from './pages/Profile';
+import EditProfile from './pages/EditProfile';
+import Settings from './pages/Settings';
 
 // Wrapper component to conditionally render Navbar
 const AppLayout = ({ children }) => {
@@ -112,6 +115,30 @@ function App() {
                 </AppLayout>
               </ProtectedRoute>
             } />
+
+<Route path="/profile" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <Profile />
+    </AppLayout>
+  </ProtectedRoute>
+} />
+
+<Route path="/edit-profile" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <EditProfile />
+    </AppLayout>
+  </ProtectedRoute>
+} />
+
+<Route path="/settings" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <Settings />
+    </AppLayout>
+  </ProtectedRoute>
+} />
             
             {/* Redirect any unknown routes to dashboard if logged in, or login page if not */}
             <Route path="*" element={<Navigate to="/" />} />

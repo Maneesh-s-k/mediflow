@@ -126,23 +126,25 @@ const Navbar = () => {
                 <span className="text-sm">{user?.name || 'Guest'}</span>
                 <i className="fas fa-chevron-down text-xs text-gray-400"></i>
               </button>
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700 animate-fade-in">
-                  <Link to="/profile" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
-                    <i className="fas fa-user mr-2 text-blue-400"></i> Profile
-                  </Link>
-                  <Link to="/profile-settings" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
-                    <i className="fas fa-cog mr-2 text-blue-400"></i> Settings
-                  </Link>
-                  <div className="border-t border-gray-700 my-1"></div>
-                  <button 
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 flex items-center"
-                  >
-                    <i className="fas fa-sign-out-alt mr-2 text-blue-400"></i> Logout
-                  </button>
-                </div>
-              )}
+             
+{userDropdownOpen && (
+  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700 animate-fade-in">
+    <Link to="/profile" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+      <i className="fas fa-user mr-2 text-blue-400"></i> Profile
+    </Link>
+    <Link to="/settings" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+      <i className="fas fa-cog mr-2 text-blue-400"></i> Settings
+    </Link>
+    <div className="border-t border-gray-700 my-1"></div>
+    <button 
+      onClick={handleLogout}
+      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 flex items-center"
+    >
+      <i className="fas fa-sign-out-alt mr-2 text-blue-400"></i> Logout
+    </button>
+  </div>
+)}
+
             </div>
           </div>
         </div>

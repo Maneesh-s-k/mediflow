@@ -1,6 +1,6 @@
 import React from 'react';
 
-const StatCard = ({ title, value, subtitle, icon, color }) => {
+const StatCard = ({ title, value, subtitle, icon, color, onClick }) => {
   const gradientMap = {
     blue: 'from-blue-900 to-blue-800',
     indigo: 'from-indigo-900 to-indigo-800',
@@ -9,7 +9,7 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
     red: 'from-red-900 to-red-800',
     purple: 'from-purple-900 to-purple-800',
   };
-  
+
   const textMap = {
     blue: 'text-blue-300',
     indigo: 'text-indigo-300',
@@ -18,7 +18,7 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
     red: 'text-red-300',
     purple: 'text-purple-300',
   };
-  
+
   const bgMap = {
     blue: 'bg-blue-600',
     indigo: 'bg-indigo-600',
@@ -27,7 +27,7 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
     red: 'bg-red-600',
     purple: 'bg-purple-600',
   };
-  
+
   const borderMap = {
     blue: 'border-blue-800',
     indigo: 'border-indigo-800',
@@ -37,32 +37,21 @@ const StatCard = ({ title, value, subtitle, icon, color }) => {
     purple: 'border-purple-800',
   };
 
-  const unitText = title.toLowerCase().includes('staff') 
-    ? 'staff' 
-    : title.toLowerCase().includes('bed') 
-      ? 'beds' 
-      : title.toLowerCase().includes('item') 
-        ? 'items' 
-        : 'patients';
-
   return (
-    <div className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${gradientMap[color]} p-6 shadow-lg border ${borderMap[color]} hover:shadow-${color}-900/20 hover:-translate-y-1 transition-all duration-300 group`}>
-      <div className={`absolute top-0 right-0 -mt-4 -mr-12 h-32 w-32 rounded-full ${bgMap[color]} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
-      <div className={`absolute bottom-0 left-0 -mb-4 -ml-4 h-16 w-16 rounded-full ${bgMap[color]} opacity-20 group-hover:opacity-30 transition-opacity duration-300`}></div>
-      <div className="relative">
-        <div className="flex items-center justify-between mb-2">
-          <div className={`text-xs font-semibold uppercase tracking-wider ${textMap[color]}`}>{title}</div>
-          <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-${color}-800/50`}>
-            <i className={`${icon} ${textMap[color]}`}></i>
-          </div>
+    <div
+      onClick={onClick}
+      className={`cursor-pointer rounded-lg border p-4 bg-gradient-to-br ${gradientMap[color]} border ${borderMap[color]} hover:brightness-110 transition-all`}
+      role="button"
+      tabIndex={0}
+      onKeyPress={(e) => { if (e.key === 'Enter') onClick(); }}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className={`text-lg font-semibold ${textMap[color]}`}>{title}</h3>
+          <p className={`text-3xl font-bold text-white`}>{value}</p>
+          <p className={`text-sm ${textMap[color]}`}>{subtitle}</p>
         </div>
-        <div className="flex items-end space-x-1">
-          <span className="text-3xl font-bold animate-pulse-slow">{value}</span>
-          <span className={`text-sm ${textMap[color]} mb-1`}>{unitText}</span>
-        </div>
-        <div className={`mt-3 flex items-center text-xs ${textMap[color]}`}>
-          <i className="fas fa-info-circle mr-1"></i> {subtitle}
-        </div>
+        <div className={`text-4xl text-white`}>{icon}</div>
       </div>
     </div>
   );
