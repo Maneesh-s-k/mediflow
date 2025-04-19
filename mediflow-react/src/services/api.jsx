@@ -1,58 +1,70 @@
 // src/services/api.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://localhost:5000/api';
 
+// Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Auth API
+export const login = async (email, password) => {
+  const response = await api.post('/auth/login', { email, password });
+  return response.data;
+};
+
+export const register = async (userData) => {
+  const response = await api.post('/auth/register', userData);
+  return response.data;
+};
+
+export const getCurrentUser = async () => {
+  const response = await api.get('/auth/me');
+  return response.data;
+};
+
+// Dashboard API
 export const fetchDashboardData = async () => {
-  try {
-    const response = await api.get('/dashboard');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    return {
-      patientQueue: { count: 0, avgWaitTime: 0 },
-      bedStatus: { available: 0, occupancyRate: 0 },
-      inventory: { lowStock: 0, critical: 0 }
-    };
-  }
+  const response = await api.get('/dashboard/stats');
+  return response.data.data;
+};
+
+// Department API
+export const fetchDepartmentLoad = async () => {
+  const response = await api.get('/departments/load');
+  return response.data.data;
+};
+
+// Patient API
+export const fetchPatients = async () => {
+  const response = await api.get('/patients');
+  return response.data.data;
 };
 
 export const fetchPatientQueue = async () => {
-  try {
-    const response = await api.get('/patient-queue/all');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching patient queue:', error);
-    return [];
-  }
+  const response = await api.get('/patients/queue/status');
+  return response.data.data;
 };
 
-
-
-// Add more API functions for beds, admissions, etc.
-
-
 export const addPatientToQueue = async (patientData) => {
-  try {
-    const response = await api.post('/patient-queue/add', {
-      ...patientData,
-      id: Date.now(), // Use timestamp as ID
-      arrivalTime: new Date(),
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error adding patient to queue:', error);
-    throw error;
-  }
+  const response = await api.post('/patients/queue', patientData);
+  return response.data;
 };
 
 export default api;
-
-

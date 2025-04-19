@@ -1,6 +1,7 @@
+// src/components/dashboard/StatCard.jsx
 import React from 'react';
 
-const StatCard = ({ title, value, subtitle, icon, color, onClick }) => {
+const StatCard = ({ title, value, subtitle, icon, color, onClick, loading = false }) => {
   const gradientMap = {
     blue: 'from-blue-900 to-blue-800',
     indigo: 'from-indigo-900 to-indigo-800',
@@ -19,28 +20,10 @@ const StatCard = ({ title, value, subtitle, icon, color, onClick }) => {
     purple: 'text-purple-300',
   };
 
-  const bgMap = {
-    blue: 'bg-blue-600',
-    indigo: 'bg-indigo-600',
-    amber: 'bg-amber-600',
-    emerald: 'bg-emerald-600',
-    red: 'bg-red-600',
-    purple: 'bg-purple-600',
-  };
-
-  const borderMap = {
-    blue: 'border-blue-800',
-    indigo: 'border-indigo-800',
-    amber: 'border-amber-800',
-    emerald: 'border-emerald-800',
-    red: 'border-red-800',
-    purple: 'border-purple-800',
-  };
-
   return (
     <div
       onClick={onClick}
-      className={`cursor-pointer rounded-lg border p-4 bg-gradient-to-br ${gradientMap[color]} border ${borderMap[color]} hover:brightness-110 transition-all`}
+      className={`cursor-pointer rounded-lg border p-4 bg-gradient-to-br ${gradientMap[color]} border-gray-700 hover:brightness-110 transition-all`}
       role="button"
       tabIndex={0}
       onKeyPress={(e) => { if (e.key === 'Enter') onClick(); }}
@@ -48,8 +31,16 @@ const StatCard = ({ title, value, subtitle, icon, color, onClick }) => {
       <div className="flex items-center justify-between">
         <div>
           <h3 className={`text-lg font-semibold ${textMap[color]}`}>{title}</h3>
-          <p className={`text-3xl font-bold text-white`}>{value}</p>
-          <p className={`text-sm ${textMap[color]}`}>{subtitle}</p>
+          {loading ? (
+            <div className="h-8 w-16 bg-gray-700 animate-pulse rounded mt-1 mb-2"></div>
+          ) : (
+            <p className={`text-3xl font-bold text-white`}>{value}</p>
+          )}
+          {loading ? (
+            <div className="h-4 w-24 bg-gray-700 animate-pulse rounded"></div>
+          ) : (
+            <p className={`text-sm ${textMap[color]}`}>{subtitle}</p>
+          )}
         </div>
         <div className={`text-4xl text-white`}>{icon}</div>
       </div>

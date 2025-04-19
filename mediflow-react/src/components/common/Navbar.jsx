@@ -107,6 +107,9 @@ const Navbar = () => {
               <NavLink to="/analytics" active={location.pathname === "/analytics"}>
                 <i className="fas fa-chart-bar mr-2 group-hover:text-blue-400 transition-colors"></i> Analytics
               </NavLink>
+              <NavLink to="/patients" active={location.pathname === "/patients"}>
+             <i className="fas fa-hospital-user mr-2 group-hover:text-blue-400 transition-colors"></i> Patients
+             </NavLink>
             </div>
           </div>
           <div className="flex items-center space-x-4">

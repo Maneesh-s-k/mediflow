@@ -17,6 +17,7 @@ import { useAuth } from './context/Authcontext';
 import Profile from './pages/Profile';
 import EditProfile from './pages/EditProfile';
 import Settings from './pages/Settings';
+import PatientManagement from './pages/PatientManagement';
 
 // Wrapper component to conditionally render Navbar
 const AppLayout = ({ children }) => {
@@ -84,6 +85,14 @@ function App() {
               </ProtectedRoute>
             } />
             
+            <Route path="/patients" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <PatientManagement />
+    </AppLayout>
+  </ProtectedRoute>
+   } />
+
             <Route path="/inventory" element={
               <ProtectedRoute>
                 <AppLayout>
@@ -139,6 +148,8 @@ function App() {
     </AppLayout>
   </ProtectedRoute>
 } />
+
+
             
             {/* Redirect any unknown routes to dashboard if logged in, or login page if not */}
             <Route path="*" element={<Navigate to="/" />} />
