@@ -1,6 +1,11 @@
 // src/pages/PatientQueue.jsx
 import React, { useState, useEffect } from 'react';
-import { fetchPatientQueue, addPatientToQueue } from '../services/api';
+import { 
+  fetchPatientQueue, 
+  addPatientToQueue, 
+  updatePatientStatus,
+  removePatientFromQueue 
+} from '../services/api';
 import AddPatientForm from '../components/patientQueue/AddPatientForm';
 import QueueTable from '../components/patientQueue/QueueTable';
 import NowServing from '../components/patientQueue/NowServing';
@@ -61,7 +66,7 @@ const PatientQueue = () => {
     }
   };
 
-  const handleCallNext = () => {
+  const handleCallNext = async () => {
     if (patientQueue.length === 0) {
       alert('No patients in queue');
       return;
@@ -69,62 +74,111 @@ const PatientQueue = () => {
     
     // Get the highest priority patient (first in the sorted queue)
     const nextPatient = patientQueue[0];
-    setCurrentPatient(nextPatient);
     
-    // Remove from queue
-    setPatientQueue(prevQueue => prevQueue.filter(p => p.id !== nextPatient.id));
-    
-    // Update stats
-    setStats(prev => ({ ...prev, total: prev.total, waiting: prev.waiting - 1 }));
+    try {
+      // Update patient status in database
+      await updatePatientStatus(nextPatient._id, 'InService');
+      
+      // Update local state
+      setCurrentPatient(nextPatient);
+      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== nextPatient._id));
+      
+      // Update stats
+      setStats(prev => ({ ...prev, waiting: prev.waiting - 1 }));
+    } catch (error) {
+      console.error('Error calling next patient:', error);
+      alert('Error calling next patient. Please try again.');
+    }
   };
 
-  const handleCompleteService = () => {
+  const handleCompleteService = async () => {
     if (!currentPatient) {
       alert('No patient currently being served');
       return;
     }
-    setCurrentPatient(null);
+    
+    try {
+      // Update patient status in database
+      await updatePatientStatus(currentPatient._id, 'Completed');
+      
+      // Update local state
+      setCurrentPatient(null);
+    } catch (error) {
+      console.error('Error completing service:', error);
+      alert('Error completing service. Please try again.');
+    }
   };
 
-  const handleCancelService = () => {
+  const handleCancelService = async () => {
     if (!currentPatient) {
       alert('No patient currently being served');
       return;
     }
     
-    // Add back to queue
-    setPatientQueue(prevQueue => [...prevQueue, currentPatient].sort((a, b) => {
-      // Sort by urgency level (descending) and then by arrival time (ascending)
-      if (b.urgencyLevel !== a.urgencyLevel) {
-        return b.urgencyLevel - a.urgencyLevel;
-      }
-      return new Date(a.arrivalTime) - new Date(b.arrivalTime);
-    }));
-    
-    // Update stats
-    setStats(prev => ({ ...prev, waiting: prev.waiting + 1 }));
-    setCurrentPatient(null);
+    try {
+      // Update patient status in database
+      await updatePatientStatus(currentPatient._id, 'Waiting');
+      
+      // Update local state
+      const updatedPatient = { ...currentPatient, status: 'Waiting' };
+      setPatientQueue(prevQueue => [...prevQueue, updatedPatient].sort((a, b) => {
+        // Sort by urgency level (descending) and then by arrival time (ascending)
+        if (b.urgencyLevel !== a.urgencyLevel) {
+          return b.urgencyLevel - a.urgencyLevel;
+        }
+        return new Date(a.arrivalTime) - new Date(b.arrivalTime);
+      }));
+      
+      // Update stats
+      setStats(prev => ({ ...prev, waiting: prev.waiting + 1 }));
+      setCurrentPatient(null);
+    } catch (error) {
+      console.error('Error canceling service:', error);
+      alert('Error canceling service. Please try again.');
+    }
   };
 
-  const handleRemovePatient = (patientId) => {
+  const handleRemovePatient = async (patientId) => {
     if (!window.confirm('Are you sure you want to remove this patient from the queue?')) {
       return;
     }
-    setPatientQueue(prevQueue => prevQueue.filter(p => p.id !== patientId));
-    // Update stats
-    setStats(prev => ({ ...prev, total: prev.total - 1, waiting: prev.waiting - 1 }));
+    
+    try {
+      // Remove patient from database
+      await removePatientFromQueue(patientId);
+      
+      // Update local state
+      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== patientId));
+      
+      // Update stats
+      setStats(prev => ({ ...prev, total: prev.total - 1, waiting: prev.waiting - 1 }));
+    } catch (error) {
+      console.error('Error removing patient:', error);
+      alert('Error removing patient. Please try again.');
+    }
   };
 
-  const handleCallSpecific = (patientId) => {
-    const patient = patientQueue.find(p => p.id === patientId);
+  const handleCallSpecific = async (patientId) => {
+    const patient = patientQueue.find(p => p._id === patientId);
     if (!patient) {
       alert('Patient not found in queue');
       return;
     }
-    setCurrentPatient(patient);
-    setPatientQueue(prevQueue => prevQueue.filter(p => p.id !== patientId));
-    // Update stats
-    setStats(prev => ({ ...prev, waiting: prev.waiting - 1 }));
+    
+    try {
+      // Update patient status in database
+      await updatePatientStatus(patientId, 'InService');
+      
+      // Update local state
+      setCurrentPatient(patient);
+      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== patientId));
+      
+      // Update stats
+      setStats(prev => ({ ...prev, waiting: prev.waiting - 1 }));
+    } catch (error) {
+      console.error('Error calling specific patient:', error);
+      alert('Error calling patient. Please try again.');
+    }
   };
 
   return (

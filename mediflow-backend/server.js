@@ -13,22 +13,10 @@ app.use(cors());
 app.use(express.json());
 
 // Import routes
-const authRoutes = require('./routes/auth.routes');
 const patientRoutes = require('./routes/patient.routes');
-const inventoryRoutes = require('./routes/inventory.routes');
-const staffRoutes = require('./routes/staff.routes');
-const departmentRoutes = require('./routes/department.routes');
-const dashboardRoutes = require('./routes/dashboard.routes');
 
-
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/auth', authRoutes);
+// Mount routes
 app.use('/api/patients', patientRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/staff', staffRoutes);
-app.use('/api/departments', departmentRoutes);
-app.use('/api/patients', patientRoutes);
-
 
 // Basic route
 app.get('/', (req, res) => {

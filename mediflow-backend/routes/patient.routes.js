@@ -1,27 +1,55 @@
+// routes/patient.routes.js
 const express = require('express');
 const router = express.Router();
 
-// Import auth middleware (uncomment when implemented)
-// const { protect, authorize } = require('../middleware/auth');
+// Import Patient model (create this if you haven't already)
+const Patient = require('../models/patient.model');
 
-// IMPORTANT: Specific routes must come before parameter routes
-// Get patient queue status
+// Get patient queue
 // GET /api/patients/queue/status
-router.get('/queue/status', /* protect, */ (req, res) => {
+router.get('/queue/status', async (req, res) => {
   try {
-    // In a real implementation, you would fetch queue from database
+    // Fetch patients in queue from MongoDB
+    const patients = await Patient.find({ status: 'Waiting' })
+      .sort({ urgencyLevel: -1, arrivalTime: 1 }); // Sort by urgency (desc) and arrival time (asc)
+    
+    // Calculate statistics
+    const count = patients.length;
+    const avgWaitTime = patients.length > 0 
+      ? Math.round(patients.reduce((sum, p) => sum + p.estimatedWaitTime, 0) / patients.length) 
+      : 0;
+    
+    // Group by department for department load
+    const byDepartment = [];
+    const deptCounts = {};
+    
+    patients.forEach(patient => {
+      const dept = patient.department;
+      if (!deptCounts[dept]) {
+        deptCounts[dept] = {
+          department: dept,
+          count: 0,
+          avgWait: 0,
+          totalWait: 0
+        };
+      }
+      deptCounts[dept].count++;
+      deptCounts[dept].totalWait += patient.estimatedWaitTime;
+    });
+    
+    // Calculate average wait time per department
+    Object.keys(deptCounts).forEach(dept => {
+      deptCounts[dept].avgWait = Math.round(deptCounts[dept].totalWait / deptCounts[dept].count);
+      byDepartment.push(deptCounts[dept]);
+    });
+    
     res.json({
       success: true,
       data: {
-        count: 142,
-        avgWaitTime: 24,
-        byDepartment: [
-          { department: 'Emergency', count: 45, avgWait: 15 },
-          { department: 'General Medicine', count: 38, avgWait: 30 },
-          { department: 'Cardiology', count: 25, avgWait: 25 },
-          { department: 'Pediatrics', count: 18, avgWait: 20 },
-          { department: 'Orthopedics', count: 16, avgWait: 35 }
-        ]
+        count,
+        avgWaitTime,
+        byDepartment,
+        patients
       }
     });
   } catch (error) {
@@ -32,22 +60,41 @@ router.get('/queue/status', /* protect, */ (req, res) => {
 
 // Add patient to queue
 // POST /api/patients/queue
-router.post('/queue', /* protect, */ (req, res) => {
+router.post('/queue', async (req, res) => {
   try {
-    // Validate input
-    const { name, department } = req.body;
-    if (!name || !department) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide patient name and department'
-      });
-    }
+    const {
+      name,
+      age,
+      gender,
+      department,
+      urgencyLevel,
+      symptoms,
+      vitals,
+      token,
+      estimatedWaitTime
+    } = req.body;
     
-    // In a real implementation, you would add the patient to the queue in the database
+    // Create new patient in MongoDB
+    const newPatient = new Patient({
+      name,
+      age,
+      gender,
+      department,
+      urgencyLevel,
+      symptoms,
+      vitals,
+      token,
+      estimatedWaitTime,
+      arrivalTime: new Date(),
+      status: 'Waiting'
+    });
+    
+    await newPatient.save();
+    
     res.status(201).json({
       success: true,
       message: 'Patient added to queue successfully',
-      data: req.body
+      data: newPatient
     });
   } catch (error) {
     console.error('Error adding patient to queue:', error);
@@ -55,230 +102,64 @@ router.post('/queue', /* protect, */ (req, res) => {
   }
 });
 
-// Get all patients
-// GET /api/patients
-router.get('/', /* protect, */ (req, res) => {
+// Update patient status (for calling next, completing service, etc.)
+// PATCH /api/patients/:id/status
+router.patch('/:id/status', async (req, res) => {
   try {
-    // In a real implementation, you would fetch patients from database
-    const patients = [
-      {
-        _id: 'pat001',
-        patientId: 'PAT-2025-0001',
-        name: 'John Doe',
-        age: 45,
-        gender: 'Male',
-        contact: '555-1234',
-        email: 'john@example.com',
-        address: '123 Main St',
-        bloodGroup: 'O+',
-        department: 'Cardiology',
-        status: 'Admitted',
-        admissionDate: '2025-04-15T10:30:00.000Z'
-      },
-      {
-        _id: 'pat002',
-        patientId: 'PAT-2025-0002',
-        name: 'Jane Smith',
-        age: 35,
-        gender: 'Female',
-        contact: '555-5678',
-        email: 'jane@example.com',
-        address: '456 Oak Ave',
-        bloodGroup: 'A+',
-        department: 'General Medicine',
-        status: 'Waiting',
-        admissionDate: null
-      }
-    ];
+    const { status } = req.body;
     
-    res.json({
-      success: true,
-      count: patients.length,
-      data: patients
-    });
-  } catch (error) {
-    console.error('Error fetching patients:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-// Get patient by ID
-// GET /api/patients/:id
-router.get('/:id', /* protect, */ (req, res) => {
-  try {
-    // Validate ID
-    if (!req.params.id) {
+    if (!['Waiting', 'InService', 'Completed', 'Cancelled'].includes(status)) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide a valid patient ID'
+        error: 'Invalid status'
       });
     }
     
-    // In a real implementation, you would fetch patient from database
-    const patient = {
-      _id: req.params.id,
-      patientId: 'PAT-2025-0001',
-      name: 'John Doe',
-      age: 45,
-      gender: 'Male',
-      contact: '555-1234',
-      email: 'john@example.com',
-      address: '123 Main St',
-      bloodGroup: 'O+',
-      department: 'Cardiology',
-      status: 'Admitted',
-      admissionDate: '2025-04-15T10:30:00.000Z',
-      medicalHistory: 'Hypertension, Diabetes Type 2',
-      allergies: ['Penicillin', 'Peanuts'],
-      emergencyContact: {
-        name: 'Mary Doe',
-        relation: 'Wife',
-        phone: '555-4321'
-      }
-    };
+    const patient = await Patient.findByIdAndUpdate(
+      req.params.id,
+      { 
+        status,
+        ...(status === 'InService' ? { serviceStartTime: new Date() } : {})
+      },
+      { new: true }
+    );
+    
+    if (!patient) {
+      return res.status(404).json({
+        success: false,
+        error: 'Patient not found'
+      });
+    }
     
     res.json({
       success: true,
       data: patient
     });
   } catch (error) {
-    console.error('Error fetching patient:', error);
+    console.error('Error updating patient status:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
-// Create new patient
-// POST /api/patients
-router.post('/', /* protect, */ (req, res) => {
-  try {
-    // Validate required fields
-    const { name, age, gender, contact, department } = req.body;
-    if (!name || !age || !gender || !contact || !department) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide name, age, gender, contact and department'
-      });
-    }
-    
-    // Validate email format if provided
-    const { email } = req.body;
-    if (email && !email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide a valid email address'
-      });
-    }
-    
-    // Validate age is a number
-    if (isNaN(age) || age <= 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Age must be a positive number'
-      });
-    }
-    
-    // In a real implementation, you would save patient to database
-    const { address, bloodGroup } = req.body;
-    
-    // Generate patient ID
-    const patientId = `PAT-2025-${Math.floor(1000 + Math.random() * 9000)}`;
-    
-    const newPatient = {
-      _id: `pat${Math.floor(100 + Math.random() * 900)}`,
-      patientId,
-      name,
-      age,
-      gender,
-      contact,
-      email,
-      address,
-      bloodGroup,
-      department,
-      status: 'Waiting',
-      admissionDate: null,
-      createdAt: new Date().toISOString()
-    };
-    
-    res.status(201).json({
-      success: true,
-      message: 'Patient created successfully',
-      data: newPatient
-    });
-  } catch (error) {
-    console.error('Error creating patient:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-// Update patient
-// PUT /api/patients/:id
-router.put('/:id', /* protect, */ (req, res) => {
-  try {
-    // Validate ID
-    if (!req.params.id) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide a valid patient ID'
-      });
-    }
-    
-    // Validate email format if provided
-    const { email } = req.body;
-    if (email && !email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Please provide a valid email address'
-      });
-    }
-    
-    // Validate age is a number if provided
-    const { age } = req.body;
-    if (age && (isNaN(age) || age <= 0)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Age must be a positive number'
-      });
-    }
-    
-    // In a real implementation, you would update patient in database
-    const updatedPatient = {
-      _id: req.params.id,
-      ...req.body,
-      updatedAt: new Date().toISOString()
-    };
-    
-    res.json({
-      success: true,
-      message: 'Patient updated successfully',
-      data: updatedPatient
-    });
-  } catch (error) {
-    console.error('Error updating patient:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
-  }
-});
-
-// Delete patient
+// Remove patient from queue
 // DELETE /api/patients/:id
-router.delete('/:id', /* protect, authorize('Admin'), */ (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    // Validate ID
-    if (!req.params.id) {
-      return res.status(400).json({
+    const patient = await Patient.findByIdAndDelete(req.params.id);
+    
+    if (!patient) {
+      return res.status(404).json({
         success: false,
-        error: 'Please provide a valid patient ID'
+        error: 'Patient not found'
       });
     }
     
-    // In a real implementation, you would delete patient from database
-    // You might also want to check if the patient exists before attempting to delete
-    
     res.json({
       success: true,
-      message: 'Patient deleted successfully'
+      message: 'Patient removed from queue'
     });
   } catch (error) {
-    console.error('Error deleting patient:', error);
+    console.error('Error removing patient:', error);
     res.status(500).json({ success: false, error: 'Server error' });
   }
 });

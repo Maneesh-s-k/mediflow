@@ -23,50 +23,14 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Auth API
-export const login = async (email, password) => {
-  const response = await api.post('/auth/login', { email, password });
-  return response.data;
-};
-
-export const register = async (userData) => {
-  const response = await api.post('/auth/register', userData);
-  return response.data;
-};
-
-export const getCurrentUser = async () => {
-  const response = await api.get('/auth/me');
-  return response.data;
-};
-
-// Dashboard API
-export const fetchDashboardData = async () => {
-  const response = await api.get('/dashboard/stats');
-  return response.data.data;
-};
-
-// Department API
-export const fetchDepartmentLoad = async () => {
-  const response = await api.get('/departments/load');
-  return response.data.data;
-};
-
-// Patient API
-export const fetchPatients = async () => {
-  const response = await api.get('/patients');
-  return response.data.data;
-};
-
-// src/services/api.js
-// Add this function to your existing api.js file
+// Patient Queue API
 export const fetchPatientQueue = async () => {
   try {
     const response = await api.get('/patients/queue/status');
-    return response.data.data.byDepartment || [];
+    return response.data.data.patients || [];
   } catch (error) {
     console.error('Error fetching patient queue:', error);
-    // Return empty array as fallback
-    return [];
+    throw error;
   }
 };
 
@@ -80,5 +44,24 @@ export const addPatientToQueue = async (patientData) => {
   }
 };
 
+export const updatePatientStatus = async (patientId, status) => {
+  try {
+    const response = await api.patch(`/patients/${patientId}/status`, { status });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating patient status:', error);
+    throw error;
+  }
+};
+
+export const removePatientFromQueue = async (patientId) => {
+  try {
+    const response = await api.delete(`/patients/${patientId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error removing patient from queue:', error);
+    throw error;
+  }
+};
 
 export default api;
