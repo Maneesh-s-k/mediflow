@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/Authcontext';
 
 const Navbar = () => {
   const [isVisible, setIsVisible] = useState(true);
@@ -7,6 +8,7 @@ const Navbar = () => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     // Update time every minute
@@ -60,6 +62,12 @@ const Navbar = () => {
     };
   }, [userDropdownOpen]);
 
+  // Handle logout
+  const handleLogout = () => {
+    setUserDropdownOpen(false);
+    logout();
+  };
+
   return (
     <nav 
       className={`fixed top-0 w-full z-50 backdrop-blur-md bg-gray-900/80 border-b border-gray-800 transition-transform duration-300 ${
@@ -94,12 +102,11 @@ const Navbar = () => {
                 <i className="fas fa-pills mr-2 group-hover:text-blue-400 transition-colors"></i> Inventory
               </NavLink>
               <NavLink to="/staff" active={location.pathname === "/staff"}>
-              <i className="fas fa-user-md mr-2 group-hover:text-blue-400 transition-colors"></i> Staff
+                <i className="fas fa-user-md mr-2 group-hover:text-blue-400 transition-colors"></i> Staff
               </NavLink>
               <NavLink to="/analytics" active={location.pathname === "/analytics"}>
-              <i className="fas fa-chart-bar mr-2 group-hover:text-blue-400 transition-colors"></i> Analytics
+                <i className="fas fa-chart-bar mr-2 group-hover:text-blue-400 transition-colors"></i> Analytics
               </NavLink>
-
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -113,22 +120,27 @@ const Navbar = () => {
                 className="flex items-center space-x-2 bg-gray-800 rounded-full pl-2 pr-3 py-1 border border-gray-700 hover:border-blue-500 transition-colors"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
               >
-                <span className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-xs font-bold">DS</span>
-                <span className="text-sm">Dr. Smith</span>
+                <span className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-teal-400 flex items-center justify-center text-xs font-bold">
+                  {user?.avatar || user?.name?.charAt(0) || 'U'}
+                </span>
+                <span className="text-sm">{user?.name || 'Guest'}</span>
                 <i className="fas fa-chevron-down text-xs text-gray-400"></i>
               </button>
               {userDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-10 border border-gray-700 animate-fade-in">
-                  <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                  <Link to="/profile" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
                     <i className="fas fa-user mr-2 text-blue-400"></i> Profile
-                  </a>
-                  <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                  </Link>
+                  <Link to="/profile-settings" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
                     <i className="fas fa-cog mr-2 text-blue-400"></i> Settings
-                  </a>
+                  </Link>
                   <div className="border-t border-gray-700 my-1"></div>
-                  <a href="#" className="block px-4 py-2 text-sm hover:bg-gray-700 flex items-center">
+                  <button 
+                    onClick={handleLogout}
+                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-700 flex items-center"
+                  >
                     <i className="fas fa-sign-out-alt mr-2 text-blue-400"></i> Logout
-                  </a>
+                  </button>
                 </div>
               )}
             </div>
