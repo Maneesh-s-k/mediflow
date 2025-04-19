@@ -57,14 +57,28 @@ export const fetchPatients = async () => {
   return response.data.data;
 };
 
+// src/services/api.js
+// Add this function to your existing api.js file
 export const fetchPatientQueue = async () => {
-  const response = await api.get('/patients/queue/status');
-  return response.data.data;
+  try {
+    const response = await api.get('/patients/queue/status');
+    return response.data.data.byDepartment || [];
+  } catch (error) {
+    console.error('Error fetching patient queue:', error);
+    // Return empty array as fallback
+    return [];
+  }
 };
 
 export const addPatientToQueue = async (patientData) => {
-  const response = await api.post('/patients/queue', patientData);
-  return response.data;
+  try {
+    const response = await api.post('/patients/queue', patientData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding patient to queue:', error);
+    throw error;
+  }
 };
+
 
 export default api;
