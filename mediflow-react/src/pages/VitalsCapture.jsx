@@ -31,6 +31,7 @@ const VitalsCapture = () => {
       name: patientInfo.name,
       age: patientInfo.age,
       gender: patientInfo.gender,
+      contact: patientInfo.contact,
       department: patientInfo.department,
       urgencyLevel: triageResult.urgencyLevel,
       symptoms: patientInfo.chiefComplaint,

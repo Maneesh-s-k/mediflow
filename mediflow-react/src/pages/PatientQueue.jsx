@@ -9,7 +9,7 @@ import DepartmentLoadList from '../components/patientQueue/Department_LoadList';
 
 const PatientQueue = () => {
   const [patients, setPatients] = useState([]);
-  const [currentPatient, setCurrentPatient] = useState(null);
+  const [currentPatients, setCurrentPatients] = useState([]); // changed to array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -24,24 +24,20 @@ const PatientQueue = () => {
   const loadPatientQueue = async () => {
     try {
       setLoading(true);
-      const patients = await fetchPatientQueue(); // Now always an array
-      console.log('Fetched patients:', patients);
-      
+      const patients = await fetchPatientQueue();
       setPatients(patients);
-      
-      // Find current patient
-      const current = patients.find(p => p.status === 'InService');
-      setCurrentPatient(current || null);
-      
-      // Calculate stats
+
+      // Find all current patients (status: 'InService')
+      const inServicePatients = patients.filter(p => p.status === 'InService');
+      setCurrentPatients(inServicePatients);
+
+      // Calculate stats for waiting patients
       const waitingPatients = patients.filter(p => p.status === 'Waiting');
       const total = waitingPatients.length;
-      const avgWaitTime = total > 0 
+      const avgWaitTime = total > 0
         ? Math.round(waitingPatients.reduce((sum, p) => sum + p.estimatedWaitTime, 0) / total)
         : 0;
-        
       setStats({ total, waiting: total, avgWaitTime });
-      
     } catch (error) {
       setError('Failed to load queue');
     } finally {
@@ -70,7 +66,6 @@ const PatientQueue = () => {
     const nextPatient = waitingList[0];
     try {
       await updatePatientStatus(nextPatient._id, 'InService');
-      setCurrentPatient(nextPatient);
       await loadPatientQueue();
     } catch (error) {
       console.error('Error calling next patient:', error);
@@ -78,14 +73,9 @@ const PatientQueue = () => {
     }
   };
 
-  const handleCompleteService = async () => {
-    if (!currentPatient) {
-      alert('No patient currently being served');
-      return;
-    }
+  const handleCompleteService = async (patientId) => {
     try {
-      await updatePatientStatus(currentPatient._id, 'Completed');
-      setCurrentPatient(null);
+      await updatePatientStatus(patientId, 'Completed');
       await loadPatientQueue();
     } catch (error) {
       console.error('Error completing service:', error);
@@ -93,14 +83,9 @@ const PatientQueue = () => {
     }
   };
 
-  const handleCancelService = async () => {
-    if (!currentPatient) {
-      alert('No patient currently being served');
-      return;
-    }
+  const handleCancelService = async (patientId) => {
     try {
-      await updatePatientStatus(currentPatient._id, 'Waiting');
-      setCurrentPatient(null);
+      await updatePatientStatus(patientId, 'Waiting');
       await loadPatientQueue();
     } catch (error) {
       console.error('Error canceling service:', error);
@@ -139,8 +124,7 @@ const PatientQueue = () => {
 
       {/* Now Serving Section */}
       <NowServing
-        currentPatient={currentPatient}
-        onCallNext={handleCallNext}
+        currentPatients={currentPatients}
         onComplete={handleCompleteService}
         onCancel={handleCancelService}
       />
