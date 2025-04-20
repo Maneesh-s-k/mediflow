@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion'; // Add this import
 import Card from '../components/common/Card';
 import PatientInfoForm from '../components/vitalsCapture/PatientInfoForm';
 import VitalsForm from '../components/vitalsCapture/VitalsForm';
@@ -178,6 +179,13 @@ const VitalsCapture = () => {
   };
 
   return (
+    <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="container mx-auto px-4 py-6">
     <Card>
       {currentStep === 'patientInfo' && (
         <PatientInfoForm onContinue={handlePatientInfoSubmit} />
@@ -200,6 +208,8 @@ const VitalsCapture = () => {
         />
       )}
     </Card>
+    </div>
+    </motion.div>
   );
 };
 

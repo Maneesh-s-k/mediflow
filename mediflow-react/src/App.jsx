@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion'; // Add this import
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/Authcontext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Navbar from './components/common/Navbar';
@@ -19,7 +20,21 @@ import EditProfile from './pages/EditProfile';
 import Settings from './pages/Settings';
 import PatientManagement from './pages/PatientManagement';
 
-
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Your existing routes */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/patient-queue" element={<PatientQueue />} />
+        <Route path="/vitals-capture" element={<VitalsCapture />} />
+        {/* Other routes */}
+      </Routes>
+    </AnimatePresence>
+  );
+};
 // Wrapper component to conditionally render Navbar
 const AppLayout = ({ children }) => {
   const { user } = useAuth();

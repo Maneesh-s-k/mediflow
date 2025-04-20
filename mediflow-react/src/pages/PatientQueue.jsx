@@ -1,5 +1,6 @@
 // src/pages/PatientQueue.jsx
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion'; // Add this import
 import { addPatientToQueue, fetchPatientQueue, updatePatientStatus, removePatientFromQueue } from '../api/patientApi';
 import AddPatientQueueForm from '../components/patientQueue/AddPatientQueueForm';
 import Button from '../components/common/Button';
@@ -110,6 +111,13 @@ const PatientQueue = () => {
   const waitingPatients = patients.filter(p => p.status === 'Waiting');
 
   return (
+    <motion.div 
+      className="space-y-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.5 }}
+    >
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Patient Queue Management</h1>
@@ -177,6 +185,7 @@ const PatientQueue = () => {
         </div>
       )}
     </div>
+    </motion.div>
   );
 };
 
