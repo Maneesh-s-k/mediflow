@@ -1,7 +1,11 @@
-// models/patient.model.js
 const mongoose = require('mongoose');
 
 const PatientSchema = new mongoose.Schema({
+  patientId: {
+    type: String,
+    unique: true,
+    required: true
+  },
   name: {
     type: String,
     required: true
@@ -15,6 +19,10 @@ const PatientSchema = new mongoose.Schema({
     required: true,
     enum: ['Male', 'Female', 'Other']
   },
+  contact: {
+    type: String,
+    required: true
+  },
   department: {
     type: String,
     required: true
@@ -23,21 +31,28 @@ const PatientSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 1,
-    max: 4
+    max: 4,
+    default: 1
   },
   symptoms: {
     type: String
   },
   vitals: {
     bloodPressure: String,
-    temperature: String,
-    heartRate: String,
-    oxygenSaturation: String
+    temperature: Number,
+    heartRate: Number,
+    oxygenSaturation: Number,
+    respiratoryRate: Number,
+    bmi: Number
   },
   token: {
     type: String,
     required: true,
     unique: true
+  },
+  estimatedWaitTime: {
+    type: Number,
+    required: true
   },
   arrivalTime: {
     type: Date,
@@ -46,13 +61,8 @@ const PatientSchema = new mongoose.Schema({
   serviceStartTime: {
     type: Date
   },
-  estimatedWaitTime: {
-    type: Number,
-    required: true
-  },
   status: {
     type: String,
-    required: true,
     enum: ['Waiting', 'InService', 'Completed', 'Cancelled'],
     default: 'Waiting'
   }

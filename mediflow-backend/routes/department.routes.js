@@ -66,22 +66,22 @@ router.get('/load', (req, res) => {
     { name: 'Pediatrics', capacity: 20, currentPatients: 9, waitTime: 20, staffCount: 3 },
     { name: 'Neurology', capacity: 20, currentPatients: 11, waitTime: 40, staffCount: 4 }
   ];
-  
+
   // Calculate department load percentages
   const departmentsWithLoad = departments.map(dept => ({
     ...dept,
     load: Math.round((dept.currentPatients / dept.capacity) * 100)
   }));
-  
+
   // Find busiest department
-  const busiestDept = departmentsWithLoad.reduce((busiest, current) => 
+  const busiestDept = departmentsWithLoad.reduce((busiest, current) =>
     current.load > busiest.load ? current : busiest, departmentsWithLoad[0]);
-  
+
   // Calculate total capacity and current patients
   const totalCapacity = departments.reduce((sum, dept) => sum + dept.capacity, 0);
   const totalPatients = departments.reduce((sum, dept) => sum + dept.currentPatients, 0);
   const availableCapacity = totalCapacity - totalPatients;
-  
+
   res.json({
     success: true,
     message: 'Get department load',

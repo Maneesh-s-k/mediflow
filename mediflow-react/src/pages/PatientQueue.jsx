@@ -1,29 +1,22 @@
 // src/pages/PatientQueue.jsx
 import React, { useState, useEffect } from 'react';
-import { 
-  fetchPatientQueue, 
-  addPatientToQueue, 
-  updatePatientStatus,
-  removePatientFromQueue 
-} from '../services/api';
-import AddPatientForm from '../components/patientQueue/AddPatientForm';
+import { addPatientToQueue, fetchPatientQueue, updatePatientStatus, removePatientFromQueue } from '../api/patientApi';
+import AddPatientQueueForm from '../components/patientQueue/AddPatientQueueForm';
+import Button from '../components/common/Button';
 import QueueTable from '../components/patientQueue/QueueTable';
 import NowServing from '../components/patientQueue/NowServing';
 import DepartmentLoadList from '../components/patientQueue/Department_LoadList';
-import Card from '../components/common/Card';
-import Button from '../components/common/Button';
 
 const PatientQueue = () => {
-  const [patientQueue, setPatientQueue] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [currentPatient, setCurrentPatient] = useState(null);
-  const [stats, setStats] = useState({ total: 0, waiting: 0, avgWaitTime: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [stats, setStats] = useState({ total: 0, waiting: 0, avgWaitTime: 0 });
 
   useEffect(() => {
     loadPatientQueue();
-    // Refresh data every minute
     const interval = setInterval(loadPatientQueue, 60000);
     return () => clearInterval(interval);
   }, []);
@@ -31,32 +24,34 @@ const PatientQueue = () => {
   const loadPatientQueue = async () => {
     try {
       setLoading(true);
-      setError(null);
-      const data = await fetchPatientQueue();
+      const patients = await fetchPatientQueue(); // Now always an array
+      console.log('Fetched patients:', patients);
       
-      // Transform data if needed
-      const queueData = Array.isArray(data) ? data : [];
+      setPatients(patients);
       
-      setPatientQueue(queueData);
+      // Find current patient
+      const current = patients.find(p => p.status === 'InService');
+      setCurrentPatient(current || null);
       
       // Calculate stats
-      const total = queueData.length;
-      const waiting = queueData.length;
-      const totalWaitTime = queueData.reduce((sum, patient) => sum + (patient.estimatedWaitTime || 0), 0);
-      const avgWaitTime = total > 0 ? Math.round(totalWaitTime / total) : 0;
+      const waitingPatients = patients.filter(p => p.status === 'Waiting');
+      const total = waitingPatients.length;
+      const avgWaitTime = total > 0 
+        ? Math.round(waitingPatients.reduce((sum, p) => sum + p.estimatedWaitTime, 0) / total)
+        : 0;
+        
+      setStats({ total, waiting: total, avgWaitTime });
       
-      setStats({ total, waiting, avgWaitTime });
-      setLoading(false);
-    } catch (err) {
-      console.error('Failed to load patient queue:', err);
-      setError('Failed to load patient queue. Please try again later.');
+    } catch (error) {
+      setError('Failed to load queue');
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleAddPatient = async (newPatient) => {
+  const handleAddPatient = async (patientData) => {
     try {
-      await addPatientToQueue(newPatient);
+      await addPatientToQueue(patientData);
       await loadPatientQueue();
       setShowAddForm(false);
       return true;
@@ -67,24 +62,16 @@ const PatientQueue = () => {
   };
 
   const handleCallNext = async () => {
-    if (patientQueue.length === 0) {
+    const waitingList = patients.filter(p => p.status === 'Waiting');
+    if (waitingList.length === 0) {
       alert('No patients in queue');
       return;
     }
-    
-    // Get the highest priority patient (first in the sorted queue)
-    const nextPatient = patientQueue[0];
-    
+    const nextPatient = waitingList[0];
     try {
-      // Update patient status in database
       await updatePatientStatus(nextPatient._id, 'InService');
-      
-      // Update local state
       setCurrentPatient(nextPatient);
-      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== nextPatient._id));
-      
-      // Update stats
-      setStats(prev => ({ ...prev, waiting: prev.waiting - 1 }));
+      await loadPatientQueue();
     } catch (error) {
       console.error('Error calling next patient:', error);
       alert('Error calling next patient. Please try again.');
@@ -96,13 +83,10 @@ const PatientQueue = () => {
       alert('No patient currently being served');
       return;
     }
-    
     try {
-      // Update patient status in database
       await updatePatientStatus(currentPatient._id, 'Completed');
-      
-      // Update local state
       setCurrentPatient(null);
+      await loadPatientQueue();
     } catch (error) {
       console.error('Error completing service:', error);
       alert('Error completing service. Please try again.');
@@ -114,24 +98,10 @@ const PatientQueue = () => {
       alert('No patient currently being served');
       return;
     }
-    
     try {
-      // Update patient status in database
       await updatePatientStatus(currentPatient._id, 'Waiting');
-      
-      // Update local state
-      const updatedPatient = { ...currentPatient, status: 'Waiting' };
-      setPatientQueue(prevQueue => [...prevQueue, updatedPatient].sort((a, b) => {
-        // Sort by urgency level (descending) and then by arrival time (ascending)
-        if (b.urgencyLevel !== a.urgencyLevel) {
-          return b.urgencyLevel - a.urgencyLevel;
-        }
-        return new Date(a.arrivalTime) - new Date(b.arrivalTime);
-      }));
-      
-      // Update stats
-      setStats(prev => ({ ...prev, waiting: prev.waiting + 1 }));
       setCurrentPatient(null);
+      await loadPatientQueue();
     } catch (error) {
       console.error('Error canceling service:', error);
       alert('Error canceling service. Please try again.');
@@ -142,101 +112,71 @@ const PatientQueue = () => {
     if (!window.confirm('Are you sure you want to remove this patient from the queue?')) {
       return;
     }
-    
     try {
-      // Remove patient from database
       await removePatientFromQueue(patientId);
-      
-      // Update local state
-      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== patientId));
-      
-      // Update stats
-      setStats(prev => ({ ...prev, total: prev.total - 1, waiting: prev.waiting - 1 }));
+      await loadPatientQueue();
     } catch (error) {
       console.error('Error removing patient:', error);
       alert('Error removing patient. Please try again.');
     }
   };
 
-  const handleCallSpecific = async (patientId) => {
-    const patient = patientQueue.find(p => p._id === patientId);
-    if (!patient) {
-      alert('Patient not found in queue');
-      return;
-    }
-    
-    try {
-      // Update patient status in database
-      await updatePatientStatus(patientId, 'InService');
-      
-      // Update local state
-      setCurrentPatient(patient);
-      setPatientQueue(prevQueue => prevQueue.filter(p => p._id !== patientId));
-      
-      // Update stats
-      setStats(prev => ({ ...prev, waiting: prev.waiting - 1 }));
-    } catch (error) {
-      console.error('Error calling specific patient:', error);
-      alert('Error calling patient. Please try again.');
-    }
-  };
+  // Only show 'Waiting' patients in the queue table and department load
+  const waitingPatients = patients.filter(p => p.status === 'Waiting');
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Patient Queue Management</h1>
-        <Button 
-          variant="primary" 
-          icon="fas fa-plus" 
+        <Button
+          variant="primary"
+          icon="fas fa-plus"
           onClick={() => setShowAddForm(true)}
         >
           Add Patient to Queue
         </Button>
       </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <NowServing 
-            currentPatient={currentPatient} 
-            onCallNext={handleCallNext} 
-            onComplete={handleCompleteService} 
-            onCancel={handleCancelService} 
+
+      {/* Now Serving Section */}
+      <NowServing
+        currentPatient={currentPatient}
+        onCallNext={handleCallNext}
+        onComplete={handleCompleteService}
+        onCancel={handleCancelService}
+      />
+
+      {/* Department Load List */}
+      <DepartmentLoadList patients={waitingPatients} />
+
+      {/* Patient Queue Table */}
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden border border-gray-700">
+        {error && (
+          <div className="text-red-500 text-center py-8">
+            <i className="fas fa-exclamation-circle text-2xl mb-2"></i>
+            <p>{error}</p>
+          </div>
+        )}
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <QueueTable
+            patients={waitingPatients}
+            stats={stats}
+            onCallPatient={handleCallNext}
+            onRemovePatient={handleRemovePatient}
           />
-          
-          <Card title="Patient Queue" icon="fas fa-list-ol" gradient="from-blue-900 to-blue-800">
-            {loading ? (
-              <div className="p-4 flex justify-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-              </div>
-            ) : error ? (
-              <div className="p-4 text-red-400 text-center">
-                <i className="fas fa-exclamation-circle mr-2"></i>
-                {error}
-              </div>
-            ) : (
-              <QueueTable 
-                patients={patientQueue} 
-                stats={stats} 
-                onCallPatient={handleCallSpecific} 
-                onRemovePatient={handleRemovePatient} 
-              />
-            )}
-          </Card>
-        </div>
-        
-        <div>
-          <Card title="Department Load" icon="fas fa-chart-pie" gradient="from-purple-900 to-purple-800">
-            <DepartmentLoadList patients={patientQueue} />
-          </Card>
-        </div>
+        )}
       </div>
-      
+
+      {/* Add Patient Modal */}
       {showAddForm && (
         <div className="fixed inset-0 bg-gray-900/80 flex items-center justify-center z-50">
           <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4 border-b border-gray-700 flex justify-between items-center">
               <h2 className="text-xl font-semibold">Add Patient to Queue</h2>
-              <button 
+              <button
                 onClick={() => setShowAddForm(false)}
                 className="text-gray-400 hover:text-white"
               >
@@ -244,7 +184,10 @@ const PatientQueue = () => {
               </button>
             </div>
             <div className="p-4">
-              <AddPatientForm onAddPatient={handleAddPatient} />
+              <AddPatientQueueForm
+                onAddPatient={handleAddPatient}
+                onCancel={() => setShowAddForm(false)}
+              />
             </div>
           </div>
         </div>

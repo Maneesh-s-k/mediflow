@@ -9,8 +9,8 @@ const router = express.Router();
 // Get all staff members
 // GET /api/staff
 router.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Get all staff members',
     data: [] // This would be populated with actual staff data
   });
@@ -19,8 +19,8 @@ router.get('/', (req, res) => {
 // Get staff member by ID
 // GET /api/staff/:id
 router.get('/:id', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Get staff member with id ${req.params.id}`,
     data: {} // This would be a single staff member object
   });
@@ -31,8 +31,8 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
   // In a real implementation, you would validate the request body
   // and create a new staff member in the database
-  res.status(201).json({ 
-    success: true, 
+  res.status(201).json({
+    success: true,
     message: 'Create new staff member',
     data: req.body
   });
@@ -41,10 +41,10 @@ router.post('/', (req, res) => {
 // Update staff member
 // PUT /api/staff/:id
 router.put('/:id', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Update staff member with id ${req.params.id}`,
-    data: { 
+    data: {
       id: req.params.id,
       ...req.body
     }
@@ -54,8 +54,8 @@ router.put('/:id', (req, res) => {
 // Delete staff member
 // DELETE /api/staff/:id
 router.delete('/:id', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Delete staff member with id ${req.params.id}`
   });
 });
@@ -63,8 +63,8 @@ router.delete('/:id', (req, res) => {
 // Get staff by department
 // GET /api/staff/department/:departmentName
 router.get('/department/:departmentName', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Get staff members in department ${req.params.departmentName}`,
     data: [] // This would be staff filtered by department
   });
@@ -73,8 +73,8 @@ router.get('/department/:departmentName', (req, res) => {
 // Get staff by role
 // GET /api/staff/role/:roleName
 router.get('/role/:roleName', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Get staff members with role ${req.params.roleName}`,
     data: [] // This would be staff filtered by role
   });
@@ -84,16 +84,14 @@ router.get('/role/:roleName', (req, res) => {
 // PATCH /api/staff/:id/status
 router.patch('/:id/status', (req, res) => {
   const { status } = req.body;
-  
   if (!status || !['active', 'leave', 'inactive'].includes(status)) {
     return res.status(400).json({
       success: false,
       error: 'Please provide a valid status (active, leave, or inactive)'
     });
   }
-  
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Update status of staff member with id ${req.params.id} to ${status}`
   });
 });
@@ -101,8 +99,8 @@ router.patch('/:id/status', (req, res) => {
 // Get staff schedule
 // GET /api/staff/:id/schedule
 router.get('/:id/schedule', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Get schedule for staff member with id ${req.params.id}`,
     data: {
       shifts: [] // This would contain the staff member's schedule
@@ -114,16 +112,14 @@ router.get('/:id/schedule', (req, res) => {
 // POST /api/staff/:id/assign
 router.post('/:id/assign', (req, res) => {
   const { departmentId } = req.body;
-  
   if (!departmentId) {
     return res.status(400).json({
       success: false,
       error: 'Please provide a department ID'
     });
   }
-  
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: `Assign staff member with id ${req.params.id} to department ${departmentId}`
   });
 });

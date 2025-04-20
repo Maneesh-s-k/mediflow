@@ -3,7 +3,7 @@ import Card from '../components/common/Card';
 import PatientInfoForm from '../components/vitalsCapture/PatientInfoForm';
 import VitalsForm from '../components/vitalsCapture/VitalsForm';
 import TriageResult from '../components/vitalsCapture/TriageResult';
-import { addPatientToQueue } from '../services/api';
+import { addPatientToQueue } from '../api/patientApi';
 
 const VitalsCapture = () => {
   const [currentStep, setCurrentStep] = useState('patientInfo'); // patientInfo, vitals, result
@@ -19,16 +19,13 @@ const VitalsCapture = () => {
 
   const handleVitalsSubmit = (vitals) => {
     setVitalsData(vitals);
-    
     // Perform AI triage based on vitals and patient info
     const triageResult = performAITriage(patientInfo, vitals);
     setTriageResult(triageResult);
-    
     // Generate token and estimated wait time
     const token = generateToken();
     const estimatedWaitTime = calculateWaitTime(triageResult.urgencyLevel, patientInfo.department);
     setTokenInfo({ token, estimatedWaitTime });
-    
     // Add patient to queue
     addPatientToQueue({
       name: patientInfo.name,
@@ -42,15 +39,18 @@ const VitalsCapture = () => {
         temperature: vitals.temperature,
         heartRate: vitals.heartRate,
         oxygenSaturation: vitals.oxygenSaturation,
-        respiratoryRate: vitals.respiratoryRate
+        respiratoryRate: vitals.respiratoryRate,
+        bmi: vitals.bmi,
       },
       token,
-      estimatedWaitTime
+      estimatedWaitTime,
+      status: "Waiting"
+    }).then(() => {
+      setCurrentStep('result');
     }).catch(error => {
       console.error('Error adding patient to queue:', error);
+      alert('Failed to add patient to queue. Please try again.');
     });
-    
-    setCurrentStep('result');
   };
 
   const handlePrintToken = () => {
@@ -76,7 +76,6 @@ const VitalsCapture = () => {
   const performAITriage = (patient, vitals) => {
     // In a real application, this would be a sophisticated ML model
     // For this demo, we'll use a rule-based approach
-    
     // Parse values
     const systolic = parseInt(vitals.bloodPressureSystolic);
     const diastolic = parseInt(vitals.bloodPressureDiastolic);
@@ -84,10 +83,8 @@ const VitalsCapture = () => {
     const temp = parseFloat(vitals.temperature);
     const o2 = parseInt(vitals.oxygenSaturation);
     const rr = parseInt(vitals.respiratoryRate);
-    
     // Initialize score (higher = more urgent)
     let urgencyScore = 0;
-    
     // Check blood pressure
     if (systolic >= 180 || diastolic >= 120) {
       urgencyScore += 3; // Hypertensive crisis
@@ -96,14 +93,12 @@ const VitalsCapture = () => {
     } else if (systolic < 90 || diastolic < 60) {
       urgencyScore += 2; // Hypotension
     }
-    
     // Check heart rate
     if (hr > 120) {
       urgencyScore += 2; // Tachycardia
     } else if (hr < 50) {
       urgencyScore += 2; // Bradycardia
     }
-    
     // Check temperature
     if (temp >= 103) {
       urgencyScore += 3; // High fever
@@ -112,14 +107,12 @@ const VitalsCapture = () => {
     } else if (temp < 95) {
       urgencyScore += 3; // Hypothermia
     }
-    
     // Check oxygen saturation
     if (o2 < 90) {
       urgencyScore += 4; // Severe hypoxemia
     } else if (o2 < 94) {
       urgencyScore += 2; // Moderate hypoxemia
     }
-    
     // Check respiratory rate
     if (rr > 30) {
       urgencyScore += 3; // Severe tachypnea
@@ -128,14 +121,12 @@ const VitalsCapture = () => {
     } else if (rr < 8) {
       urgencyScore += 3; // Bradypnea
     }
-    
     // Check chief complaint for keywords indicating urgency
     const urgentKeywords = [
-      'chest pain', 'difficulty breathing', 'shortness of breath', 
-      'severe pain', 'bleeding', 'stroke', 'unconscious', 'seizure',
-      'heart attack', 'trauma', 'head injury', 'broken', 'fracture'
+      'chest pain', 'difficulty breathing', 'shortness of breath', 'severe pain',
+      'bleeding', 'stroke', 'unconscious', 'seizure', 'heart attack', 'trauma',
+      'head injury', 'broken', 'fracture'
     ];
-    
     const complaint = patient.chiefComplaint.toLowerCase();
     for (const keyword of urgentKeywords) {
       if (complaint.includes(keyword)) {
@@ -143,15 +134,12 @@ const VitalsCapture = () => {
         break;
       }
     }
-    
     // Check age (elderly and very young get higher priority)
     if (patient.age < 5 || patient.age > 75) {
       urgencyScore += 1;
     }
-    
     // Determine urgency level based on score
     let urgencyLevel, message;
-    
     if (urgencyScore >= 8) {
       urgencyLevel = 4;
       message = 'This patient requires immediate medical attention.';
@@ -165,83 +153,52 @@ const VitalsCapture = () => {
       urgencyLevel = 1;
       message = 'This patient can be seen in regular order.';
     }
-    
-    return {
-      urgencyLevel,
-      message,
-      score: urgencyScore
-    };
+    return { urgencyLevel, message, score: urgencyScore };
   };
 
   // Helper function to generate a token
   const generateToken = () => {
-    return `A${Math.floor(1000 + Math.random() * 9000)}`;
+    return `Q${Math.floor(1000 + Math.random() * 9000)}`;
   };
 
   // Helper function to calculate estimated wait time
   const calculateWaitTime = (urgencyLevel, department) => {
     // Base wait times by department (in minutes)
     const departmentWaitTimes = {
-      'General Medicine': 30,
-      'Cardiology': 45,
-      'Orthopedics': 40,
-      'Pediatrics': 25,
-      'Neurology': 50,
-      'Emergency': 15
+      'General Medicine': 30, 'Cardiology': 45, 'Orthopedics': 40,
+      'Pediatrics': 25, 'Neurology': 50, 'Emergency': 15
     };
-    
     // Adjust by urgency level
-    const urgencyMultipliers = {
-      1: 1.5,    // Low priority - longer wait
-      2: 1.0,    // Medium priority - standard wait
-      3: 0.6,    // High priority - shorter wait
-      4: 0.3     // Critical - very short wait
-    };
-    
-    // Calculate base wait time
+    const urgencyMultipliers = { 1: 1.5, 2: 1.0, 3: 0.6, 4: 0.3 };
     let waitTime = departmentWaitTimes[department] || 30;
-    
-    // Apply urgency multiplier
     waitTime *= urgencyMultipliers[urgencyLevel] || 1.0;
-    
-    // Add some randomness (±5 minutes)
     waitTime += Math.floor(Math.random() * 10) - 5;
-    
-    // Ensure wait time is positive
     return Math.max(5, Math.round(waitTime));
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <Card 
-        title="Patient Vitals Capture" 
-        icon="fas fa-heartbeat"
-        gradient="from-blue-900 to-blue-800"
-      >
-        {currentStep === 'patientInfo' && (
-          <PatientInfoForm onContinue={handlePatientInfoSubmit} />
-        )}
-        
-        {currentStep === 'vitals' && (
-          <VitalsForm 
-            patientName={patientInfo.name} 
-            onSubmit={handleVitalsSubmit} 
-          />
-        )}
-        
-        {currentStep === 'result' && (
-          <TriageResult 
-            patientInfo={patientInfo}
-            vitals={vitalsData}
-            triageResult={triageResult}
-            tokenInfo={tokenInfo}
-            onPrintToken={handlePrintToken}
-            onSendSMS={handleSendSMS}
-            onNewPatient={handleNewPatient}
-          />
-        )}
-      </Card>
-    </div>
+    <Card>
+      {currentStep === 'patientInfo' && (
+        <PatientInfoForm onContinue={handlePatientInfoSubmit} />
+      )}
+      {currentStep === 'vitals' && (
+        <VitalsForm
+          patientName={patientInfo?.name}
+          onSubmit={handleVitalsSubmit}
+        />
+      )}
+      {currentStep === 'result' && (
+        <TriageResult
+          patientInfo={patientInfo}
+          vitals={vitalsData}
+          triageResult={triageResult}
+          tokenInfo={tokenInfo}
+          onPrintToken={handlePrintToken}
+          onSendSMS={handleSendSMS}
+          onNewPatient={handleNewPatient}
+        />
+      )}
+    </Card>
   );
 };
 

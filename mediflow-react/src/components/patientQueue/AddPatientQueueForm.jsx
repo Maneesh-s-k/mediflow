@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import Button from '../common/Button';
 
-const AddPatientForm = ({ onAddPatient, onCancel }) => {
+const AddPatientQueueForm = ({ onAddPatient, onCancel }) => {
+  const [departments] = useState([
+    'Cardiology', 'General Medicine', 'Pediatrics',
+    'Orthopedics', 'Neurology', 'Emergency'
+  ]);
   const [formData, setFormData] = useState({
     name: '', age: '', gender: '', contact: '',
     department: '', urgencyLevel: '1', symptoms: ''
@@ -40,12 +44,11 @@ const AddPatientForm = ({ onAddPatient, onCancel }) => {
         urgencyLevel: parseInt(formData.urgencyLevel),
         token,
         estimatedWaitTime,
-        status: 'Waiting'
+        status: 'Waiting',
+        arrivalTime: new Date()
       };
-      const success = await onAddPatient(patientData);
-      if (success) {
-        setIsSubmitting(false);
-      }
+      await onAddPatient(patientData);
+      setIsSubmitting(false);
     } catch (error) {
       console.error('Error adding patient to queue:', error);
       setIsSubmitting(false);
@@ -138,12 +141,9 @@ const AddPatientForm = ({ onAddPatient, onCancel }) => {
             className={`w-full px-3 py-2 bg-gray-700 rounded-md border ${errors.department ? 'border-red-500' : 'border-gray-600'}`}
           >
             <option value="">Select Department</option>
-            <option value="General Medicine">General Medicine</option>
-            <option value="Cardiology">Cardiology</option>
-            <option value="Orthopedics">Orthopedics</option>
-            <option value="Pediatrics">Pediatrics</option>
-            <option value="Neurology">Neurology</option>
-            <option value="Emergency">Emergency</option>
+            {departments.map(dept => (
+              <option key={dept} value={dept}>{dept}</option>
+            ))}
           </select>
           {errors.department && <p className="mt-1 text-sm text-red-500">{errors.department}</p>}
         </div>
@@ -198,4 +198,4 @@ const AddPatientForm = ({ onAddPatient, onCancel }) => {
   );
 };
 
-export default AddPatientForm;
+export default AddPatientQueueForm;

@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/dashboard/StatCard';
 import DepartmentLoad from '../components/dashboard/DepartmentLoad';
 import RecentActivity from '../components/dashboard/RecentActivity';
-import { fetchDashboardData } from '../services/api';
+import { fetchDashboardData } from '../api/dashboardApi';
+import { fetchRecentActivity } from '../api/dashboardApi';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
@@ -15,6 +16,12 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Add state for activities
+  const [activities, setActivities] = useState([]);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
+  const [activitiesError, setActivitiesError] = useState(null);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,14 +38,42 @@ const Dashboard = () => {
       }
     };
     
+    const loadActivities = async () => {
+      try {
+        setActivitiesLoading(true);
+        const data = await fetchRecentActivity();
+        setActivities(data);
+        setActivitiesLoading(false);
+      } catch (err) {
+        setActivitiesError('Failed to load recent activities');
+        setActivitiesLoading(false);
+        console.error(err);
+      }
+    };
+    
     loadDashboardData();
+    loadActivities();
+    
     // Refresh data every 5 minutes
-    const interval = setInterval(loadDashboardData, 300000);
-    return () => clearInterval(interval);
+    const dashboardInterval = setInterval(loadDashboardData, 300000);
+    // Refresh activities every 2 minutes
+    const activitiesInterval = setInterval(loadActivities, 120000);
+    
+    return () => {
+      clearInterval(dashboardInterval);
+      clearInterval(activitiesInterval);
+    };
   }, []);
 
   return (
     <div>
+      {error && (
+        <div className="bg-red-900/50 text-red-300 p-4 mb-6 rounded-lg border border-red-800">
+          <i className="fas fa-exclamation-circle mr-2"></i>
+          {error}
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
           title="Patient Queue"
@@ -78,8 +113,13 @@ const Dashboard = () => {
         />
       </div>
       
-      <div className="grid grid-cols-1 gap-6">
-        <RecentActivity />
+      {/* Changed from grid to flex column layout */}
+      <div className="flex flex-col space-y-6">
+        <RecentActivity 
+          activities={activities} 
+          loading={activitiesLoading} 
+          error={activitiesError} 
+        />
         <DepartmentLoad />
       </div>
     </div>

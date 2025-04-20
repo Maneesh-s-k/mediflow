@@ -2,7 +2,12 @@
 import React from 'react';
 import Button from '../common/Button';
 
-const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime: 0 }, onCallPatient, onRemovePatient }) => {
+const QueueTable = ({
+  patients = [],
+  stats = { total: 0, waiting: 0, avgWaitTime: 0 },
+  onCallPatient,
+  onRemovePatient
+}) => {
   // Calculate how long the patient has been waiting
   const calculateWaitTime = (arrivalTime) => {
     if (!arrivalTime) return '0 min';
@@ -18,8 +23,7 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
       case 4: return 'Critical';
       case 3: return 'High';
       case 2: return 'Medium';
-      case 1: 
-      default: return 'Low';
+      case 1: default: return 'Low';
     }
   };
 
@@ -29,14 +33,13 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
       case 4: return 'bg-red-900/50 text-red-300 border border-red-800';
       case 3: return 'bg-amber-900/50 text-amber-300 border border-amber-800';
       case 2: return 'bg-blue-900/50 text-blue-300 border border-blue-800';
-      case 1: 
-      default: return 'bg-green-900/50 text-green-300 border border-green-800';
+      case 1: default: return 'bg-green-900/50 text-green-300 border border-green-800';
     }
   };
 
   return (
     <div>
-      <div className="px-4 py-3 bg-gray-700/30 flex flex-wrap gap-4 justify-between items-center">
+      <div className="px-4 py-3 bg-gray-700/30 flex flex-wrap gap-4 justify-between items-center mb-4">
         <div className="flex gap-4">
           <div>
             <span className="text-sm text-gray-400">Total</span>
@@ -51,15 +54,7 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
             <p className="font-semibold">{stats.avgWaitTime} min</p>
           </div>
         </div>
-        <div className="flex items-center">
-          <input 
-            type="text" 
-            placeholder="Search patients..." 
-            className="px-3 py-1 bg-gray-700 border border-gray-600 rounded-md text-sm"
-          />
-        </div>
       </div>
-      
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-700">
           <thead className="bg-gray-800/50">
@@ -76,16 +71,15 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
           <tbody className="divide-y divide-gray-700">
             {patients.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={7} className="text-center py-8 text-gray-400">
                   No patients in queue
                 </td>
               </tr>
             ) : (
               patients.map(patient => {
                 const waitedSoFar = calculateWaitTime(patient.arrivalTime);
-                
                 return (
-                  <tr key={patient.id} className="hover:bg-gray-700/30 transition-colors">
+                  <tr key={patient._id} className="hover:bg-gray-700/30 transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="font-mono font-medium">{patient.token}</span>
                     </td>
@@ -115,19 +109,19 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                       <div className="flex space-x-2">
-                        <Button 
-                          variant="primary" 
-                          size="xs" 
-                          icon="fas fa-user-check" 
-                          onClick={() => onCallPatient(patient.id)}
+                        <Button
+                          variant="primary"
+                          size="xs"
+                          icon="fas fa-user-check"
+                          onClick={() => onCallPatient(patient)}
                         >
                           Call
                         </Button>
-                        <Button 
-                          variant="danger" 
-                          size="xs" 
-                          icon="fas fa-user-times" 
-                          onClick={() => onRemovePatient(patient.id)}
+                        <Button
+                          variant="danger"
+                          size="xs"
+                          icon="fas fa-user-times"
+                          onClick={() => onRemovePatient(patient._id)}
                         >
                           Remove
                         </Button>
@@ -142,6 +136,7 @@ const QueueTable = ({ patients = [], stats = { total: 0, waiting: 0, avgWaitTime
       </div>
     </div>
   );
+  
 };
 
 export default QueueTable;

@@ -5,10 +5,8 @@ const router = express.Router();
 // POST /api/auth/register
 router.post('/register', (req, res) => {
   const { name, email, password, role, department } = req.body;
-  
   // In a real implementation, you would validate input, check if user exists,
   // hash the password, and save to database
-  
   res.status(201).json({
     success: true,
     message: 'User registered successfully',
@@ -27,9 +25,7 @@ router.post('/register', (req, res) => {
 // POST /api/auth/login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
-  
   // In a real implementation, you would validate credentials against database
-  
   // For demo purposes, accept any login
   res.json({
     success: true,
@@ -50,7 +46,6 @@ router.post('/login', (req, res) => {
 // GET /api/auth/me
 router.get('/me', (req, res) => {
   // In a real implementation, you would get user from JWT token
-  
   res.json({
     success: true,
     data: {
@@ -68,7 +63,6 @@ router.get('/me', (req, res) => {
 // PUT /api/auth/profile
 router.put('/profile', (req, res) => {
   const { name, department, specialty, contact } = req.body;
-  
   res.json({
     success: true,
     message: 'Profile updated successfully',
