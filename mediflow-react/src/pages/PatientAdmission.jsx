@@ -1,57 +1,36 @@
-import React, { useState } from 'react';
-import Card from '../components/common/Card';
-import AdmissionForm from '../components/admission/AdmissionForm';
-import AdmissionsTable from '../components/admission/AdmissionsTable';
-import AdmissionDetails from '../components/admission/AdmissionDetails';
-
-const PatientAdmission = () => {
-  const [admissions, setAdmissions] = useState([]);
-  const [selectedAdmission, setSelectedAdmission] = useState(null);
-
-  const handleAdmit = (form) => {
-    const newAdmission = {
-      ...form,
-      id: `ADM${Math.floor(1000 + Math.random() * 9000)}`,
-      admissionDate: new Date().toISOString(),
-      bedId: form.wardType.slice(0, 3).toUpperCase() + Math.floor(100 + Math.random() * 900)
-    };
-    setAdmissions([newAdmission, ...admissions]);
-    alert(`Patient ${form.patientName} admitted successfully!`);
-  };
-
-  const handleView = (admission) => {
-    setSelectedAdmission(admission);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedAdmission(null);
-  };
-
-  const handleDischarge = (admission) => {
-    if (window.confirm(`Discharge patient ${admission.patientName}?`)) {
-      setAdmissions(admissions.filter(a => a.id !== admission.id));
-      setSelectedAdmission(null);
-      alert('Patient discharged!');
+// In PatientAdmission.jsx, update the loadData function
+const loadData = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    
+    // Use Promise.allSettled instead of Promise.all to prevent one failed request from failing all
+    const [admissionsResult, patientsResult, bedsResult] = await Promise.allSettled([
+      fetchActiveAdmissions(),
+      fetchPatients(),
+      fetchAvailableBeds()
+    ]);
+    
+    // Extract values or empty arrays if rejected
+    const admissionsData = admissionsResult.status === 'fulfilled' ? admissionsResult.value : [];
+    const patientsData = patientsResult.status === 'fulfilled' ? patientsResult.value : [];
+    const bedsData = bedsResult.status === 'fulfilled' ? bedsResult.value : [];
+    
+    setAdmissions(admissionsData);
+    setPatients(patientsData);
+    setAvailableBeds(bedsData);
+    
+    // Show warning if any request failed
+    if (admissionsResult.status === 'rejected' || 
+        patientsResult.status === 'rejected' || 
+        bedsResult.status === 'rejected') {
+      setError('Some data could not be loaded. Please refresh to try again.');
     }
-  };
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div>
-        <Card title="Patient Admission" icon="fas fa-procedures" gradient="from-blue-900 to-blue-800">
-          <AdmissionForm onAdmit={handleAdmit} />
-        </Card>
-      </div>
-      <div className="lg:col-span-2 space-y-6">
-        <Card title="Recent Admissions" icon="fas fa-history" gradient="from-emerald-900 to-emerald-800">
-          <AdmissionsTable admissions={admissions} onView={handleView} />
-        </Card>
-        <Card title="Admission Details" icon="fas fa-info-circle" gradient="from-blue-900 to-blue-800">
-          <AdmissionDetails admission={selectedAdmission} onClose={handleCloseDetails} onDischarge={handleDischarge} />
-        </Card>
-      </div>
-    </div>
-  );
+    
+    setLoading(false);
+  } catch (error) {
+    console.error('Error loading admission data:', error);
+    setError('Failed to load admission data. Please try again.');
+    setLoading(false);
+  }
 };
-
-export default PatientAdmission;
