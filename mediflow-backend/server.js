@@ -15,6 +15,7 @@ const connectDB = require('./config/db');
 require('dotenv').config();
 
 // Connect to MongoDB
+
 connectDB();
 
 
@@ -27,6 +28,14 @@ app.use(express.json());
 
 const departmentRoutes = require('./routes/department.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+// Import routes
+const bedRoutes = require('./routes/bed.routes');
+const admissionRoutes = require('./routes/admission.routes');
+
+// Mount routes
+app.use('/api/beds', bedRoutes);
+app.use('/api/admissions', admissionRoutes);
+
 // Import other routes as needed
 
 // Mount routes
@@ -35,6 +44,8 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 app.use('/api/patients', require('./routes/patient.routes'));
 app.use('/api/departments', departmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
+
 // Mount other routes as needed
 
 // Basic route

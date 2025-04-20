@@ -2,60 +2,122 @@ import React from 'react';
 import Button from '../common/Button';
 
 const AdmissionDetails = ({ admission, onClose, onDischarge }) => {
-  if (!admission) {
-    return (
-      <div className="text-center p-10">
-        <i className="fas fa-clipboard-list fa-3x text-gray-600 mb-3"></i>
-        <p className="text-lg text-gray-400">Select an admission to view details</p>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-700/30 rounded-lg p-4">
-          <h6 className="text-sm font-medium mb-3 text-blue-400">Patient Information</h6>
-          <div className="space-y-2 text-sm">
-            <p><span className="font-medium">Name:</span> {admission.patientName}</p>
-            <p><span className="font-medium">Age/Gender:</span> {admission.age}/{admission.gender?.charAt(0)}</p>
-            <p><span className="font-medium">Contact:</span> {admission.contactNumber}</p>
-            <p><span className="font-medium">Emergency Contact:</span> {admission.emergencyContact || 'N/A'}</p>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Admission Details</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-400 hover:text-white"
+        >
+          <i className="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div className="bg-gray-800/30 p-4 rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <span className="text-sm text-gray-400">Admission ID</span>
+            <p className="font-mono font-medium">{admission.admissionId}</p>
           </div>
+          <span className={`px-2 py-1 text-xs rounded-full ${
+            admission.status === 'Active' ? 'bg-green-900/50 text-green-300 border border-green-800' :
+            admission.status === 'Discharged' ? 'bg-blue-900/50 text-blue-300 border border-blue-800' :
+            'bg-gray-900/50 text-gray-300 border border-gray-800'
+          }`}>
+            {admission.status}
+          </span>
         </div>
-        <div className="bg-gray-700/30 rounded-lg p-4">
-          <h6 className="text-sm font-medium mb-3 text-blue-400">Admission Information</h6>
-          <div className="space-y-2 text-sm">
-            <p><span className="font-medium">ID:</span> {admission.id}</p>
-            <p><span className="font-medium">Type:</span> {admission.admissionType}</p>
-            <p><span className="font-medium">Department:</span> {admission.department}</p>
-            <p><span className="font-medium">Doctor:</span> {admission.attendingDoctor}</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <span className="text-sm text-gray-400">Patient</span>
+            <p className="font-medium">{admission.patientName}</p>
+          </div>
+          <div>
+            <span className="text-sm text-gray-400">Admission Type</span>
+            <p className="font-medium">{admission.admissionType}</p>
+          </div>
+          <div>
+            <span className="text-sm text-gray-400">Admission Date</span>
+            <p className="font-medium">{new Date(admission.admissionDate).toLocaleString()}</p>
+          </div>
+          {admission.dischargeDate && (
+            <div>
+              <span className="text-sm text-gray-400">Discharge Date</span>
+              <p className="font-medium">{new Date(admission.dischargeDate).toLocaleString()}</p>
+            </div>
+          )}
+          <div>
+            <span className="text-sm text-gray-400">Bed Assignment</span>
+            <p className="font-medium">
+              {admission.assignedBed ? 
+                `${admission.assignedBed.bedId} (${admission.assignedBed.location.ward}, ${admission.assignedBed.location.room})` : 
+                'Not assigned'}
+            </p>
+          </div>
+          <div>
+            <span className="text-sm text-gray-400">Attending Physician</span>
+            <p className="font-medium">{admission.attendingPhysician}</p>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-700/30 rounded-lg p-4">
-          <h6 className="text-sm font-medium mb-3 text-blue-400">Medical Information</h6>
-          <div className="space-y-2 text-sm">
-            <p><span className="font-medium">Diagnosis:</span> {admission.diagnosis}</p>
-            <p><span className="font-medium">Ward:</span> {admission.wardType}</p>
-            <p><span className="font-medium">Bed:</span> {admission.bedId || '-'}</p>
-            <p><span className="font-medium">Insurance:</span> {admission.insuranceInfo || 'N/A'}</p>
+      
+      <div className="bg-gray-800/30 p-4 rounded-lg">
+        <h3 className="font-semibold mb-2">Medical Details</h3>
+        <div className="space-y-3">
+          <div>
+            <span className="text-sm text-gray-400">Admission Reason</span>
+            <p className="mt-1">{admission.admissionReason}</p>
+          </div>
+          {admission.diagnosisCodes && admission.diagnosisCodes.length > 0 && (
+            <div>
+              <span className="text-sm text-gray-400">Diagnosis Codes</span>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {admission.diagnosisCodes.map((code, index) => (
+                  <span key={index} className="bg-gray-700 px-2 py-1 rounded text-xs">
+                    {code}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {admission.notes && (
+            <div>
+              <span className="text-sm text-gray-400">Notes</span>
+              <p className="mt-1 whitespace-pre-line">{admission.notes}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {admission.insuranceDetails && (
+        <div className="bg-gray-800/30 p-4 rounded-lg">
+          <h3 className="font-semibold mb-2">Insurance Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <span className="text-sm text-gray-400">Provider</span>
+              <p className="font-medium">{admission.insuranceDetails.provider}</p>
+            </div>
+            <div>
+              <span className="text-sm text-gray-400">Policy Number</span>
+              <p className="font-medium">{admission.insuranceDetails.policyNumber}</p>
+            </div>
           </div>
         </div>
-        <div className="bg-gray-700/30 rounded-lg p-4">
-          <h6 className="text-sm font-medium mb-3 text-blue-400">Notes</h6>
-          <p className="text-sm">{admission.notes || 'No additional notes.'}</p>
+      )}
+      
+      {admission.status === 'Active' && (
+        <div className="flex justify-end">
+          <Button
+            variant="danger"
+            icon="fas fa-sign-out-alt"
+            onClick={onDischarge}
+          >
+            Discharge Patient
+          </Button>
         </div>
-      </div>
-      <div className="flex justify-end space-x-3">
-        <Button variant="outline" onClick={onClose} icon="fas fa-times">
-          Close
-        </Button>
-        <Button variant="success" onClick={() => onDischarge(admission)} icon="fas fa-check-circle">
-          Discharge
-        </Button>
-      </div>
+      )}
     </div>
   );
 };

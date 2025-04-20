@@ -5,6 +5,7 @@ const Department = require('../models/department.model');
 const User = require('../models/user.model');
 const Patient = require('../models/patient.model');
 const Inventory = require('../models/inventory.model');
+const Bed = require('../models/bed.model'); // Add this import
 
 // Load env vars
 dotenv.config();
@@ -177,6 +178,37 @@ const inventoryItems = [
   }
 ];
 
+// Generate beds dynamically
+const generateBeds = (count = 20) => {
+  const beds = [];
+  const wards = ['Cardiology', 'General Medicine', 'Pediatrics', 'Orthopedics', 'Neurology', 'Emergency'];
+  const floors = ['1st Floor', '2nd Floor', '3rd Floor'];
+  
+  for (let i = 1; i <= count; i++) {
+    const wardIndex = i % wards.length;
+    const floorIndex = Math.floor(i / 8) % floors.length;
+    const roomNumber = Math.floor(i / 2) + 101;
+    
+    beds.push({
+      bedId: `B${String(i).padStart(3, '0')}`,
+      location: {
+        room: `Room ${roomNumber}`,
+        floor: floors[floorIndex],
+        ward: wards[wardIndex],
+        description: `${wards[wardIndex]} ward, ${floors[floorIndex]}, Room ${roomNumber}`
+      },
+      status: 'Available',
+      patientId: null,
+      lastCleaned: new Date()
+    });
+  }
+  return beds;
+};
+
+// Generate 20 beds
+const beds = generateBeds(20);
+
+// Import data into DB
 // Import data into DB
 const importData = async () => {
   try {
@@ -185,12 +217,14 @@ const importData = async () => {
     await User.deleteMany();
     await Patient.deleteMany();
     await Inventory.deleteMany();
+    await Bed.deleteMany(); // Add this line
 
     // Insert new data
     await Department.insertMany(departments);
     await User.create(users);
     await Patient.insertMany(patients);
     await Inventory.insertMany(inventoryItems);
+    await Bed.insertMany(beds); // Add this line
 
     console.log('Data Imported Successfully');
     process.exit();
@@ -200,6 +234,8 @@ const importData = async () => {
   }
 };
 
+
+// Delete all data
 // Delete all data
 const deleteData = async () => {
   try {
@@ -207,6 +243,7 @@ const deleteData = async () => {
     await User.deleteMany();
     await Patient.deleteMany();
     await Inventory.deleteMany();
+    await Bed.deleteMany(); // Add this line
 
     console.log('Data Destroyed');
     process.exit();
@@ -215,6 +252,7 @@ const deleteData = async () => {
     process.exit(1);
   }
 };
+
 
 // Check command line args
 if (process.argv[2] === '-i') {
