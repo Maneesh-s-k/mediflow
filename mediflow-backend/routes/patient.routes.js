@@ -15,6 +15,20 @@ function generatePatientId() {
   return `P${y}${m}${d}${h}${min}${s}${rand}`;
 }
 
+// GET /api/patients/all - Get all patients regardless of status
+router.get('/all', async (req, res) => {
+  try {
+    const patients = await Patient.find({});
+    res.json({
+      success: true,
+      data: patients
+    });
+  } catch (error) {
+    console.error('Error fetching all patients:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // GET /api/patients/queue/status
 router.get('/queue/status', async (req, res) => {
   try {
@@ -101,7 +115,7 @@ router.post('/queue', async (req, res) => {
 router.patch('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
-    if (!['Waiting', 'InService', 'Completed', 'Cancelled'].includes(status)) {
+    if (!['Waiting', 'InService', 'Completed', 'Cancelled', 'Admitted'].includes(status)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid status'

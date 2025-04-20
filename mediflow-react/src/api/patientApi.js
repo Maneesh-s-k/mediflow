@@ -47,3 +47,28 @@ export const removePatientFromQueue = async (patientId) => {
     throw error;
   }
 };
+
+export const fetchPatients = async () => {
+  try {
+    const response = await api.get('/patients/all');
+    return response?.data?.data || [];
+  } catch (error) {
+    console.error('Error fetching all patients:', error);
+    // Return empty array instead of throwing to prevent UI crashes
+    return [];
+  }
+};
+
+// Function to admit patient and assign bed
+export const admitPatient = async (patientId, admissionData) => {
+  try {
+    const response = await api.post('/admissions', {
+      patientId,
+      ...admissionData
+    });
+    return response?.data?.data || null;
+  } catch (error) {
+    console.error('Error admitting patient:', error);
+    throw new Error(`Failed to admit patient: ${error.response?.data?.error || error.message}`);
+  }
+};

@@ -69,7 +69,7 @@ AdmissionSchema.pre('save', async function(next) {
   if (this.admissionId) {
     return next();
   }
-  
+
   const date = new Date();
   const year = date.getFullYear().toString().substr(-2);
   const month = String(date.getMonth() + 1).padStart(2, '0');

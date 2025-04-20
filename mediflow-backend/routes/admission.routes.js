@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Admission = require('../models/admission.model');
 const Patient = require('../models/patient.model');
 const Bed = require('../models/bed.model');
@@ -35,52 +36,64 @@ router.get('/active', async (req, res) => {
 // POST /api/admissions - Create new admission
 router.post('/', async (req, res) => {
   try {
-    const { patientId, admissionType, admissionReason, assignedBedId, attendingPhysician, diagnosisCodes, notes, estimatedStayDuration, insuranceDetails } = req.body;
-    
+    const {
+      patientId,
+      admissionType,
+      admissionReason,
+      assignedBed, // Changed from assignedBedId to match frontend
+      attendingPhysician,
+      diagnosisCodes,
+      notes,
+      estimatedStayDuration,
+      insuranceDetails
+    } = req.body;
+
     // Check if patient exists
     const patient = await Patient.findById(patientId);
     if (!patient) {
       return res.status(404).json({ success: false, error: 'Patient not found' });
     }
-    
+
     // Check if bed exists and is available
-    const bed = await Bed.findById(assignedBedId);
+    const bed = await Bed.findById(assignedBed); // Changed from assignedBedId
     if (!bed) {
       return res.status(404).json({ success: false, error: 'Bed not found' });
     }
     if (bed.status !== 'Available') {
       return res.status(400).json({ success: false, error: 'Bed is not available' });
     }
-    
+
     // Create admission
     const admission = new Admission({
       patientId,
       patientName: patient.name,
       admissionType,
       admissionReason,
-      assignedBed: assignedBedId,
+      assignedBed, // Changed from assignedBedId
       attendingPhysician,
       diagnosisCodes,
       notes,
       estimatedStayDuration,
       insuranceDetails
     });
-    
     await admission.save();
-    
+
     // Update bed status
     bed.status = 'Occupied';
     bed.patientId = patientId;
     bed.lastOccupied = new Date();
     await bed.save();
-    
+
+    // Update patient status to indicate admission
+    await Patient.findByIdAndUpdate(patientId, { status: 'Admitted' });
+
     res.status(201).json({
       success: true,
       data: admission
     });
   } catch (error) {
     console.error('Error creating admission:', error);
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -108,17 +121,18 @@ router.patch('/:id/discharge', async (req, res) => {
     if (!admission) {
       return res.status(404).json({ success: false, error: 'Admission not found' });
     }
-    
     if (admission.status !== 'Active') {
       return res.status(400).json({ success: false, error: 'Patient is not currently admitted' });
     }
-    
+
     // Update admission
     admission.status = 'Discharged';
     admission.dischargeDate = new Date();
-    admission.notes = admission.notes ? `${admission.notes}\n\nDischarge notes: ${req.body.notes || 'Patient discharged'}` : `Discharge notes: ${req.body.notes || 'Patient discharged'}`;
+    admission.notes = admission.notes
+      ? `${admission.notes}\n\nDischarge notes: ${req.body.notes || 'Patient discharged'}`
+      : `Discharge notes: ${req.body.notes || 'Patient discharged'}`;
     await admission.save();
-    
+
     // Free up the bed
     if (admission.assignedBed) {
       await Bed.findByIdAndUpdate(admission.assignedBed, {
@@ -127,7 +141,12 @@ router.patch('/:id/discharge', async (req, res) => {
         lastCleaned: new Date()
       });
     }
-    
+
+    // Update patient status
+    await Patient.findByIdAndUpdate(admission.patientId, {
+      status: 'Completed'
+    });
+
     res.json({
       success: true,
       data: admission
@@ -154,20 +173,20 @@ router.get('/stats', async (req, res) => {
     } else {
       startDate.setDate(startDate.getDate() - 7); // Default to week
     }
-    
+
     const total = await Admission.countDocuments();
     const active = await Admission.countDocuments({ status: 'Active' });
-    const discharged = await Admission.countDocuments({ 
+    const discharged = await Admission.countDocuments({
       status: 'Discharged',
       dischargeDate: { $gte: startDate }
     });
-    
+
     // Calculate average stay duration for discharged patients
     const dischargedPatients = await Admission.find({
       status: 'Discharged',
       dischargeDate: { $gte: startDate }
     });
-    
+
     let averageStayDuration = 0;
     if (dischargedPatients.length > 0) {
       const totalDuration = dischargedPatients.reduce((sum, admission) => {
@@ -176,10 +195,9 @@ router.get('/stats', async (req, res) => {
         const durationHours = (dischargeDate - admitDate) / (1000 * 60 * 60);
         return sum + durationHours;
       }, 0);
-      
       averageStayDuration = Math.round(totalDuration / dischargedPatients.length / 24); // Convert to days
     }
-    
+
     res.json({
       success: true,
       data: {

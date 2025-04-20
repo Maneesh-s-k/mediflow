@@ -1,7 +1,7 @@
 // src/api/admissionApi.js
 import api from './axiosConfig';
 
-// Fetch all patients (for admission form dropdown)
+//Fetch all patients (for admission form dropdown)
 export const fetchPatients = async () => {
   try {
     const response = await api.get('/patients');
@@ -45,6 +45,7 @@ export const fetchAdmissionById = async (admissionId) => {
   }
 };
 
+// Admit patient
 // Admit patient
 export const admitPatient = async (admissionData) => {
   try {

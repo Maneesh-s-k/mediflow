@@ -26,12 +26,25 @@ export default function BedManagement() {
   const loadBeds = async () => {
     try {
       setLoading(true);
-      const [bedsData, statsData] = await Promise.all([
+      const [bedsResult, statsResult] = await Promise.allSettled([
         fetchBeds(),
         fetchBedStats()
       ]);
+      
+      // Extract values or empty arrays/objects if rejected
+      const bedsData = bedsResult.status === 'fulfilled' ? bedsResult.value : [];
+      const statsData = statsResult.status === 'fulfilled' ? statsResult.value : {
+        total: 0, available: 0, occupied: 0, maintenance: 0, occupancyRate: 0
+      };
+      
       setBeds(bedsData);
       setStats(statsData);
+      
+      // Show warning if any request failed
+      if (bedsResult.status === 'rejected' || statsResult.status === 'rejected') {
+        setError('Some data could not be loaded. Please refresh to try again.');
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error loading bed data:', error);
@@ -39,6 +52,7 @@ export default function BedManagement() {
       setLoading(false);
     }
   };
+  
 
   const handleBedClick = (bed) => {
     setSelectedBed(bed);
