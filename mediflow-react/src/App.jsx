@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import EditProfile from './pages/EditProfile';
 import Settings from './pages/Settings';
 import PatientManagement from './pages/PatientManagement';
+
 const AnimatedRoutes = () => {
   const location = useLocation();
   
@@ -33,7 +34,7 @@ const AnimatedRoutes = () => {
       </Routes>
     </AnimatePresence>
   );
-
+};
 // Wrapper component to conditionally render Navbar
 const AppLayout = ({ children }) => {
   const { user } = useAuth();
@@ -42,11 +43,11 @@ const AppLayout = ({ children }) => {
     <div className="min-h-screen bg-gray-900"> {/* Added bg-gray-900 to fix white background when scrolling */}
       {user && <Navbar />}
       <div className={user ? "container mx-auto px-4 py-6 mt-16" : ""}>
-        <main className="p-6 bg-gray-900 min-h-screen"> 
-          {children}
+      <main className="p-6 bg-gray-900 min-h-screen"> 
+        {children}
         </main>
       </div>
-    </div>
+      </div>
   );
 };
 
@@ -103,13 +104,14 @@ function App() {
             } />
             
             <Route path="/patients" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <PatientManagement />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
-            
+  <ProtectedRoute>
+    <AppLayout>
+      <PatientManagement />
+    </AppLayout>
+  </ProtectedRoute>
+   } />
+   
+
             <Route path="/inventory" element={
               <ProtectedRoute>
                 <AppLayout>
@@ -118,6 +120,7 @@ function App() {
               </ProtectedRoute>
             } />
             
+  
             <Route path="/staff" element={
               <ProtectedRoute>
                 <AppLayout>
@@ -142,29 +145,31 @@ function App() {
               </ProtectedRoute>
             } />
 
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Profile />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
+<Route path="/profile" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <Profile />
+    </AppLayout>
+  </ProtectedRoute>
+} />
 
-            <Route path="/edit-profile" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <EditProfile />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
+<Route path="/edit-profile" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <EditProfile />
+    </AppLayout>
+  </ProtectedRoute>
+} />
 
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <AppLayout>
-                  <Settings />
-                </AppLayout>
-              </ProtectedRoute>
-            } />
+<Route path="/settings" element={
+  <ProtectedRoute>
+    <AppLayout>
+      <Settings />
+    </AppLayout>
+  </ProtectedRoute>
+} />
+
+
             
             {/* Redirect any unknown routes to dashboard if logged in, or login page if not */}
             <Route path="*" element={<Navigate to="/" />} />
