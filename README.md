@@ -97,15 +97,7 @@ Department load visualization
 Staff utilization analytics
 Patient flow optimization
     
-License
-This project is licensed under the MIT License - see the LICENSE file for details.
 
-Acknowledgements
-React - UI library
-
-TailwindCSS - Styling
-
-Express - Backend framework
 
 MongoDB - Database
 
