@@ -111,5 +111,3 @@ MongoDB - Database
 
 Framer Motion - Animations
 
-Made with ❤️ by The Maneesh Prime 
-© 2025 MANEESH PRIME. All rights reserved.
